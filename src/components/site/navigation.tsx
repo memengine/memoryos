@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowRight, BookOpen } from "lucide-react";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
+import { ApiStatus } from "./api-status";
 import { cn } from "@/lib/utils";
 import { useScrollSpy } from "@/hooks/use-scroll-spy";
 
@@ -12,6 +13,7 @@ const SECTION_IDS = [
   "top",
   "problem",
   "fits",
+  "compare",
   "product",
   "how",
   "demo",
@@ -19,6 +21,9 @@ const SECTION_IDS = [
   "production",
   "passport",
   "use-cases",
+  "signals",
+  "pricing",
+  "faq",
   "cta",
 ];
 
@@ -62,8 +67,9 @@ const NAV = [
     label: "Resources",
     items: [
       { label: "Docs", desc: "Quickstart, concepts, API", href: "#developers" },
-      { label: "Security & governance", desc: "Isolation, quality, audit", href: "#production" },
-      { label: "Where MemoryOS fits", desc: "vs. DB / vector / transcripts", href: "#fits" },
+      { label: "Pricing", desc: "Developer · Team · Enterprise", href: "#pricing" },
+      { label: "Signals", desc: "What teams say", href: "#signals" },
+      { label: "FAQ", desc: "Questions before shipping", href: "#faq" },
       { label: "Contact", desc: "Talk to us about onboarding", href: "#cta" },
     ],
   },
@@ -186,6 +192,7 @@ export function Navigation() {
 
         {/* Right side CTAs */}
         <div className="hidden lg:flex items-center gap-2">
+          <ApiStatus />
           <Button
             asChild
             variant="ghost"

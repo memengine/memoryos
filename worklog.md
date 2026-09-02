@@ -7,99 +7,113 @@ section components under `src/components/site/`.
 
 ---
 
-## Round 2 (cron review #2) — Current Status Assessment
-Site was stable after Round 1: lint clean, no runtime errors, 14 sections,
-~16k px tall. VLM hero rating: 7.5/10. All Round 1 features (ScrollProgress,
-scroll-spy nav, AnimatedCounter, MagneticButton, Traction, ComparisonMatrix,
-Onboarding, TypingTerminal) verified working.
+## Round 3 (cron review #3) — Current Status Assessment
+Site was stable after Round 2: lint clean, 16 sections, ~18k px tall.
+VLM hero rating: 8.5/10. All Round 2 features (interactive Memory Passport,
+CommandPalette, Pricing, FAQ, hero pipeline wave) verified working.
 
-## Round 2 — Goals / Completed Modifications
-Mandate: more styling detail + more features/functionality. Focused on the
-top recommendations from Round 1's "unresolved" list.
+## Round 3 — Goals / Completed Modifications
+Mandate: more styling detail + more features/functionality. Focus: the top
+unresolved recommendation — **real backend integration via z-ai-web-dev-sdk**.
 
-### New components added (5)
-1. **`memory-passport.tsx`** — REWRITTEN to be fully interactive:
-   - Clickable memories → opens a slide-in **ProvenanceDrawer** showing the
-     full provenance chain (ingest → extract → reconcile → govern → store)
-     with timestamps + writers, confidence, source, scope, and an
-     "Archive memory" action.
-   - **Agent grants** with working toggle switches (grant/revoke). Toggling
-     updates the consent ledger live (new entry animates in at top).
-   - Archiving a memory updates its status + logs to the feed.
-   - All state is React `useState` — fully client-side, no backend needed.
-2. **`command-palette.tsx`** (NEW) — Cmd+K / Ctrl+K (also `/`) fast
-   navigation using the existing `cmdk` + `CommandDialog`. Groups: Navigate,
-   Product, Use cases, Actions, Resources. Includes a fixed `⌘K command`
-   hint badge at bottom-left (desktop only).
-3. **`pricing.tsx`** (NEW SECTION) — 3 tiers (Developer $0, Team $240,
-   Enterprise custom). Team plan highlighted with green glow + "popular"
-   badge. Monthly/annual toggle (annual = −20%) with live price recalc.
-4. **`faq.tsx`** (NEW SECTION) — 8-question accordion using the shadcn
-   Accordion. Two-column sticky layout (heading+CTA left, accordion right).
-   First item open by default. Covers: vector DB, transcripts, models,
-   conflicts, user control, isolation, degradation, self-hosting.
+### New backend
+1. **`src/app/api/memory/extract/route.ts`** (NEW API) — real LLM-backed
+   memory extraction endpoint:
+   - `POST /api/memory/extract` with `{ input, tenant?, user? }`.
+   - Uses `z-ai-web-dev-sdk` (`ZAI.create()` → `chat.completions.create`)
+     with a strict JSON-schema system prompt to extract a single durable
+     memory candidate (type, text, confidence, evidence, conflict).
+   - Builds the full 5-stage trace (ingest → extract → reconcile → govern →
+     retrieve) + emits a prompt-ready governed context packet.
+   - `GET` returns service metadata (used by the ApiStatus widget).
+   - Hardened: JSON body validation, length cap (2000 chars), safe JSON parse
+     with markdown-fence stripping, low-confidence fallback so the UI never
+     breaks, 502 on SDK failure.
 
-### Enhancements to existing components
-- **`hero.tsx`** — MemoryGraph pipeline stage labels now animate as a
-  **sequential activation wave**: each of the 5 stages brightens in sequence
-  (stroke-opacity, fill-opacity, text opacity, circle radius all keyed to
-  staggered `keyTimes`), creating a visible "flow" around the core.
-  Addresses the VLM's "make it feel alive" feedback.
-- **`footer.tsx`** — added Pricing + FAQ links to the link columns.
+### New frontend components (2)
+2. **`live-demo.tsx`** — REWRITTEN to call the real `/api/memory/extract`:
+   - Now accepts **custom input** via a textarea (not just samples).
+   - "Run decision" fetches the real API; stages animate sequentially while
+     the call is in flight, then complete all at once when the response
+     arrives.
+   - **Decision log** renders the real trace details from the API
+     (stage · detail string), not canned mockups.
+   - **Response panel** shows the real `governed_context` XML returned by
+     the LLM + an "extracted memory" card with type/confidence/evidence/
+     conflict tags.
+   - Badge updated to "live · llm-backed"; nav header shows job_id + latency.
+   - Error state handled (rose-colored error log).
+3. **`signals.tsx`** (NEW SECTION) — social proof:
+   - 4-metric strip (94% less repetition, 6wk replaced, 5-stage audited,
+     1-click revoke).
+   - 3 testimonial cards with quotes, role, funding-stage tags, star
+     ratings, and a transparent disclaimer (illustrative, not specific
+     commitments).
 
-### Page composition (new order, 16 sections)
-Navigation → Hero → Traction → Problem → WhereItFits → ComparisonMatrix →
-Engines → HowItWorks → LiveDemo → Developers(+TypingTerminal) → Onboarding →
-Production → **MemoryPassport (interactive)** → UseCases → **Pricing** →
-**FAQ** → FinalCTA → Footer + ScrollProgress + BackToTop + **CommandPalette**.
+### New widget
+4. **`api-status.tsx`** — pings `GET /api/memory/extract` every 30s and
+   shows an "api live · {latency}ms" indicator in the nav (desktop xl+).
+   States: checking / ok / down. Communicates "this is a real product"
+   without faking customer logos.
 
-## Round 2 — Verification Results
+### Enhancements
+- **`navigation.tsx`** — added ApiStatus to the right-side CTA row;
+  updated Resources dropdown (Pricing, Signals, FAQ, Contact);
+  extended SECTION_IDS with signals/pricing/faq.
+- **`footer.tsx`** — added Signals + FAQ to the Resources column.
+- **`page.tsx`** — added `<Signals />` between UseCases and Pricing.
+
+### Page composition (new order, 17 sections)
+Navigation(+ApiStatus) → Hero → Traction → Problem → WhereItFits →
+ComparisonMatrix → Engines → HowItWorks → **LiveDemo (real LLM)** →
+Developers(+TypingTerminal) → Onboarding → Production →
+**MemoryPassport (interactive)** → UseCases → **Signals** → Pricing → FAQ →
+FinalCTA → Footer + ScrollProgress + BackToTop + CommandPalette.
+
+## Round 3 — Verification Results
 - `bun run lint`: clean.
-- Dev log: 0 runtime errors after fresh load (fast-refresh had transient
-  stale-state errors during HMR, all recovered to 200).
+- Dev log: 0 runtime errors; `GET /api/memory/extract` returning 200 (~10-15ms).
 - agent-browser QA (desktop 1440×900):
-  - Full-page scroll (18,299 px): 0 console errors. ✓
-  - 16 sections all present and rendered. ✓
-  - **Interactive Memory Passport**:
-    - Memories list renders with status badges + IDs (mem_8821 etc.). ✓
-    - Click a memory → ProvenanceDrawer slides in from right with full
-      provenance chain (5 numbered steps with timestamps). ✓
-    - Agent grants toggle switches work. ✓
-    - Toggling a grant → consent ledger updates live ("Granted ·
-      recommendations · just now" appears at top). ✓
-  - **Command palette**: Cmd+K opens dialog with search + 5 groups. ✓
-    - `⌘K command` hint badge visible bottom-left. ✓
-  - **Pricing**: 3 plans render, Team highlighted with glow + "popular". ✓
-    - Monthly→Annual toggle changes Team price $240→$192 + shows
-      "billed annually". ✓
-  - **FAQ**: 8 questions, first expanded by default, accordion toggles. ✓
-  - **Hero pipeline wave**: 5 stage labels show varying brightness
-    (sequential activation). ✓
-- VLM hero rating improved: **7.5/10 → 8.5/10**.
+  - Fresh load: 0 console errors, 17 sections, ~19.5k px. ✓
+  - **API route tested directly** via curl: returns real LLM extraction
+    (preference, conf 9.0, evidence, governed_context XML, 5-stage trace,
+    latency_ms). ✓
+  - **LiveDemo "Run decision" with sample**: all 5 stages show checkmarks;
+    extracted memory card shows `preference · conf 9.0 · "prefers concise
+    explanations"`; governed context XML rendered; tags lit. ✓
+  - **LiveDemo with custom input** ("backend engineer, Go, Kubernetes…"):
+    LLM extracted `preference · "prefers technical deep-dives over
+    high-level summaries" · conf 9.0` — correctly picked the most durable
+    signal. ✓
+  - **ApiStatus** visible in nav as "api live · 38ms". ✓
+  - **Signals** section renders 4 metrics + 3 testimonial cards with tags
+    + stars + disclaimer. ✓
+  - Full-page scroll (19,502 px): 0 console errors. ✓
+- VLM hero rating improved: **8.5/10 → 9/10** ("Elite-tier developer
+  infrastructure marketing"). Cited the live API status indicator and
+  architectural specificity as the credibility signals that pushed it to 9.
 
-## Round 2 — Unresolved / Risks + Next-Phase Recommendations
-- **No backend integration yet** — LiveDemo, TypingTerminal, Memory Passport,
-  and Pricing are all client-side simulations. Highest-value next step: wire
-  the LiveDemo "Run decision" to a real API route using `z-ai-web-dev-sdk`
-  so it actually calls an LLM to extract/govern memory.
-- **Hero ambient animation** — VLM suggested a 3-5s ambient typing/demo in
-  the hero mockup. The TypingTerminal in Developers covers this, but a
-  subtle version could be embedded directly in the hero MemoryGraph.
-- **OG/social preview image** — still no social card; could generate with
-  the image-generation skill.
+## Round 3 — Unresolved / Risks + Next-Phase Recommendations
+- **LLM latency** — extraction takes ~3-7s (cold) / ~1-3s (warm). The UI
+  already animates stages during the call, but a streaming response would
+  feel more "live". Consider SSE/streaming the trace stages as they
+  complete.
+- **Memory Passport** is still client-side only — could persist extracted
+  memories into the passport via the same API (write through add()).
+- **TypingTerminal** is still canned — could be wired to replay a real
+  extraction trace.
+- **OG/social preview image** — still no social card; generate with the
+  image-generation skill.
 - **Theme toggle (light mode)** — light tokens stubbed but unused.
-- **Performance** — page is now 18k px with many framer-motion animations;
-  consider `viewport={{ once: true }}` audit + lazy-loading below-the-fold
-  sections if Lighthouse scores matter.
-- **Accessibility audit** — command palette focus trap, drawer focus
-  management, and `aria-live` for the consent feed could be hardened.
-- **Pricing** — could add a feature-comparison toggle or "compare all
-  features" expandable.
+- **Accessibility** — focus trap in command palette + drawer; `aria-live`
+  for the consent feed and decision log.
+- **Performance** — page is now 19.5k px; consider lazy-loading
+  below-the-fold sections (Signals/Pricing/FAQ/CTA) for faster first paint.
 
 ## Design System (in `src/app/globals.css`)
 - **Aesthetic**: Dark, technical, infrastructure-grade. Default dark theme.
 - **Primary accent**: Electric mint `oklch(0.92 0.17 145)`.
-- **Secondary accents**: Warm amber (conflict), violet (multi-agent), rose (revoke).
+- **Secondary accents**: Warm amber (conflict), violet (multi-agent), rose (revoke/error).
 - **Typography**: Geist Sans (display) + Geist Mono (code/metadata).
 - **Custom utilities**: `container-page`, `bg-grid`, `bg-dots`, `glass`,
   `hairline`, `ring-inset-hairline`, `glow-mem`, `text-gradient-mem`,
@@ -111,7 +125,8 @@ Production → **MemoryPassport (interactive)** → UseCases → **Pricing** →
 ```
 src/app/layout.tsx              # dark theme, metadata, sticky footer wrapper
 src/app/globals.css            # design system: tokens, utilities, keyframes
-src/app/page.tsx               # section composition (16 sections + overlays)
+src/app/page.tsx               # section composition (17 sections + overlays)
+src/app/api/memory/extract/route.ts  # NEW: real LLM extraction endpoint
 src/hooks/use-scroll-spy.ts    # scroll-spy hook
 src/components/site/
   logo.tsx                     # LogoMark + Logo + Wordmark
@@ -119,8 +134,9 @@ src/components/site/
   back-to-top.tsx              # floating back-to-top button
   animated-counter.tsx         # deterministic count-up
   magnetic-button.tsx          # cursor-magnetic CTA wrapper
-  command-palette.tsx          # NEW: Cmd+K fast navigation
-  navigation.tsx               # sticky nav + dropdowns + scroll-spy
+  command-palette.tsx          # Cmd+K fast navigation
+  api-status.tsx               # NEW: live API health indicator
+  navigation.tsx               # sticky nav + dropdowns + scroll-spy + ApiStatus
   hero.tsx                     # hero + MemoryGraph SVG (sequential pipeline wave)
   traction.tsx                 # proof strip + counters + marquee
   problem.tsx                  # Without/With + failure modes; shared primitives
@@ -128,17 +144,18 @@ src/components/site/
   comparison-matrix.tsx        # 12×4 feature matrix
   engines.tsx                  # domain schema registry
   how-it-works.tsx             # scroll-driven 5-stage pipeline
-  live-demo.tsx                # interactive playground
+  live-demo.tsx                # REWRITTEN: real LLM-backed playground
   typing-terminal.tsx          # self-typing CLI trace
   developers.tsx               # code tabs + token highlighter + typing terminal
   onboarding.tsx               # 3-step "how teams start"
   production.tsx               # 6 pillars + audit trail + needs grid
-  memory-passport.tsx          # REWRITTEN: interactive (drawer + grant toggles)
+  memory-passport.tsx          # interactive (drawer + grant toggles)
   use-cases.tsx                # 4 distinct use-case cards
-  pricing.tsx                  # NEW: 3-tier pricing + monthly/annual toggle
-  faq.tsx                      # NEW: 8-question accordion
+  signals.tsx                  # NEW: social proof + testimonials
+  pricing.tsx                  # 3-tier pricing + monthly/annual toggle
+  faq.tsx                      # 8-question accordion
   final-cta.tsx                # closing CTA + animated counters + magnetic CTA
-  footer.tsx                   # footer (+ pricing/faq links)
+  footer.tsx                   # footer (+ signals/faq links)
 public/favicon.svg             # hexagon MemoryOS mark
 ```
 

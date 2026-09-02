@@ -41,6 +41,8 @@ const COLS = [
     links: [
       { label: "Security & governance", href: "#production" },
       { label: "Where MemoryOS fits", href: "#fits" },
+      { label: "Signals", href: "#signals" },
+      { label: "FAQ", href: "#faq" },
       { label: "Privacy", href: "#cta" },
       { label: "Terms", href: "#cta" },
       { label: "Contact", href: "#cta" },

@@ -15,6 +15,7 @@ import { Onboarding } from "@/components/site/onboarding";
 import { Production } from "@/components/site/production";
 import { MemoryPassport } from "@/components/site/memory-passport";
 import { UseCases } from "@/components/site/use-cases";
+import { Signals } from "@/components/site/signals";
 import { Pricing } from "@/components/site/pricing";
 import { FAQ } from "@/components/site/faq";
 import { FinalCTA } from "@/components/site/final-cta";
@@ -40,6 +41,7 @@ export default function Home() {
         <Production />
         <MemoryPassport />
         <UseCases />
+        <Signals />
         <Pricing />
         <FAQ />
         <FinalCTA />
