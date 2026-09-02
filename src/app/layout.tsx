@@ -1,0 +1,69 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://memoryo.dev"),
+  title: "MemoryOS — Governed memory for production AI agents",
+  description:
+    "MemoryOS turns relevant conversations, corrections, and events into current, attributable, prompt-ready context. Keep your databases, transcripts, tools, models, and agent framework.",
+  keywords: [
+    "MemoryOS",
+    "AI agent memory",
+    "governed context",
+    "production AI",
+    "agent infrastructure",
+    "memory layer",
+    "context retrieval",
+    "MCP",
+    "Memory Passport",
+  ],
+  authors: [{ name: "MemoryOS" }],
+  icons: {
+    icon: "/favicon.svg",
+  },
+  openGraph: {
+    title: "MemoryOS — Governed memory for production AI agents",
+    description:
+      "Give every authorized agent context it can trust. Persistent, governed state for production AI systems.",
+    url: "https://memoryo.dev",
+    siteName: "MemoryOS",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MemoryOS — Governed memory for production AI agents",
+    description:
+      "Give every authorized agent context it can trust. Persistent, governed state for production AI systems.",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning className="dark">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
+      >
+        {children}
+        <Toaster />
+      </body>
+    </html>
+  );
+}
