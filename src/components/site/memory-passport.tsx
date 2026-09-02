@@ -451,7 +451,7 @@ function ConsentFeed({
         </span>
       </div>
       <div className="p-3 sm:p-4">
-        <ol className="relative space-y-1">
+        <ol className="relative space-y-1" aria-live="polite" aria-label="Consent activity feed">
           <div className="absolute left-[18px] top-2 bottom-2 w-px bg-hairline" />
           <AnimatePresence initial={false}>
             {feed.map((e, i) => {
@@ -501,6 +501,23 @@ function ProvenanceDrawer({
   onClose: () => void;
   onArchive: (m: Memory) => void;
 }) {
+  const asideRef = React.useRef<HTMLElement>(null);
+  const closeBtnRef = React.useRef<HTMLButtonElement>(null);
+
+  // Focus the close button when the drawer opens + trap Escape
+  React.useEffect(() => {
+    if (!memory) return;
+    const t = setTimeout(() => closeBtnRef.current?.focus(), 50);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [memory, onClose]);
+
   return (
     <AnimatePresence>
       {memory && (
@@ -512,14 +529,17 @@ function ProvenanceDrawer({
             transition={{ duration: 0.2 }}
             onClick={onClose}
             className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm"
+            aria-hidden="true"
           />
           <motion.aside
+            ref={asideRef}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="fixed top-0 right-0 bottom-0 z-[71] w-full sm:w-[460px] bg-surface border-l border-hairline-strong overflow-y-auto scroll-thin"
             role="dialog"
+            aria-modal="true"
             aria-label={`Memory ${memory.id} provenance`}
           >
             <div className="sticky top-0 z-10 flex items-center justify-between px-5 h-14 border-b border-hairline bg-surface/90 backdrop-blur-md">
@@ -528,9 +548,10 @@ function ProvenanceDrawer({
                 <span className="text-[13px] font-mono text-ink-soft">{memory.id}</span>
               </div>
               <button
+                ref={closeBtnRef}
                 onClick={onClose}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-mute hover:text-ink hover:bg-white/[0.05]"
-                aria-label="Close"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-mute hover:text-ink hover:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-mem/50"
+                aria-label="Close provenance drawer"
               >
                 <X className="h-4 w-4" />
               </button>

@@ -6,6 +6,7 @@ import { Menu, X, ArrowRight, BookOpen } from "lucide-react";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { ApiStatus } from "./api-status";
+import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 import { useScrollSpy } from "@/hooks/use-scroll-spy";
 
@@ -197,6 +198,7 @@ export function Navigation() {
         {/* Right side CTAs */}
         <div className="hidden lg:flex items-center gap-2">
           <ApiStatus />
+          <ThemeToggle />
           <Button
             asChild
             variant="ghost"
@@ -287,6 +289,12 @@ export function Navigation() {
                 );
               })}
               <div className="flex flex-col gap-2 pt-2 border-t border-hairline">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[11px] uppercase tracking-[0.14em] text-ink-mute font-mono">
+                    appearance
+                  </span>
+                  <ThemeToggle />
+                </div>
                 <Button
                   asChild
                   variant="ghost"
