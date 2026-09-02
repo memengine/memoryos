@@ -14,9 +14,11 @@ import {
   AlertCircle,
   Sparkles,
   Zap,
+  ArrowDownToLine,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionLabel, SectionHeading } from "./problem";
+import { publishMemory, type ExtractedMemoryEvent } from "@/hooks/use-extracted-memory";
 
 /**
  * Live Memory Demo — now backed by a REAL LLM via /api/memory/extract.
@@ -97,6 +99,38 @@ export function LiveDemo() {
   const [running, setRunning] = React.useState(false);
   const [result, setResult] = React.useState<ApiResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [sentToPassport, setSentToPassport] = React.useState(false);
+
+  function sendToPassport() {
+    if (!result) return;
+    const ev: ExtractedMemoryEvent = {
+      id: result.job_id,
+      type: result.memory.memory_type,
+      text: result.memory.text,
+      confidence: result.memory.confidence,
+      source: `live-demo · ${result.input.slice(0, 40)}`,
+      status: result.memory.conflict ? "corrected" : "approved",
+      conflict: result.memory.conflict,
+      conflict_with: result.memory.conflict_with ?? null,
+      provenance: result.trace.map((t) => ({
+        event: t.stage,
+        at: t.at,
+        by: t.stage,
+      })),
+      scope: "all agents · tenant-A",
+      writtenAt: new Date().toLocaleString("en-US", {
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
+      fromApi: true,
+    };
+    publishMemory(ev);
+    setSentToPassport(true);
+    setTimeout(() => setSentToPassport(false), 3000);
+  }
 
   async function run() {
     if (running || !input.trim()) return;
@@ -151,6 +185,7 @@ export function LiveDemo() {
     setResult(null);
     setError(null);
     setRunning(false);
+    setSentToPassport(false);
   }
 
   function pickSample(s: (typeof SAMPLES)[number]) {
@@ -278,7 +313,13 @@ export function LiveDemo() {
               error={error}
               input={input}
             />
-            <ResponsePanel ready={ready} result={result} error={error} />
+            <ResponsePanel
+              ready={ready}
+              result={result}
+              error={error}
+              sentToPassport={sentToPassport}
+              onSendToPassport={sendToPassport}
+            />
           </div>
         </div>
       </div>
@@ -438,10 +479,14 @@ function ResponsePanel({
   ready,
   result,
   error,
+  sentToPassport,
+  onSendToPassport,
 }: {
   ready: boolean;
   result: ApiResponse | null;
   error: string | null;
+  sentToPassport: boolean;
+  onSendToPassport: () => void;
 }) {
   return (
     <div className="rounded-2xl border border-hairline bg-surface overflow-hidden">
@@ -522,6 +567,41 @@ function ResponsePanel({
             <ShieldCheck className="h-3 w-3" /> governed
           </span>
         </div>
+
+        {/* Send to Memory Passport — real persistence flow */}
+        {ready && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 pt-4 border-t border-hairline"
+          >
+            <button
+              onClick={onSendToPassport}
+              disabled={sentToPassport}
+              className={`group inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-[12.5px] font-medium transition-all ${
+                sentToPassport
+                  ? "border-mem/40 bg-mem/15 text-mem cursor-default"
+                  : "border-hairline-strong bg-background/40 text-ink-soft hover:border-mem/40 hover:text-mem hover:bg-mem/[0.04]"
+              }`}
+            >
+              {sentToPassport ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  Sent to Memory Passport · scroll down to inspect
+                </>
+              ) : (
+                <>
+                  <ArrowDownToLine className="h-3.5 w-3.5" />
+                  Persist to Memory Passport
+                </>
+              )}
+            </button>
+            <p className="mt-2 text-[11px] font-mono text-ink-mute">
+              Writes this memory into the interactive passport below —
+              inspectable, correctable, revocable.
+            </p>
+          </motion.div>
+        )}
       </div>
     </div>
   );

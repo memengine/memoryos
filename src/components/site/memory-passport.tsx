@@ -15,8 +15,10 @@ import {
   Fingerprint,
   Trash2,
   ChevronRight,
+  Zap,
 } from "lucide-react";
 import { SectionLabel, SectionHeading } from "./problem";
+import { useExtractedMemorySubscription } from "@/hooks/use-extracted-memory";
 
 type MemoryStatus = "approved" | "corrected" | "pending" | "archived";
 
@@ -143,6 +145,35 @@ export function MemoryPassport() {
       { icon: "revoke", color: "#FF6B6B", title: "Revoked · recommendations agent", desc: "Access removed by user", time: "1d ago" },
     ]
   );
+  const [newMemoryPulse, setNewMemoryPulse] = React.useState(false);
+
+  // Subscribe to memories extracted in the LiveDemo (real LLM → passport)
+  useExtractedMemorySubscription((ev) => {
+    const newMemory: Memory = {
+      id: ev.id,
+      type: ev.type.charAt(0).toUpperCase() + ev.type.slice(1) as Memory["type"],
+      text: ev.text,
+      status: ev.status,
+      confidence: ev.confidence,
+      source: ev.source,
+      writtenAt: ev.writtenAt,
+      provenance: ev.provenance,
+      scope: ev.scope,
+    };
+    setMemories((prev) => [newMemory, ...prev.filter((m) => m.id !== ev.id)]);
+    setFeed((prev) => [
+      {
+        icon: "approve",
+        color: ev.conflict ? "#FFB36B" : "#9EFF7A",
+        title: `${ev.conflict ? "Corrected" : "Approved"} · live-demo`,
+        desc: `${ev.type}: ${ev.text.slice(0, 60)}`,
+        time: "just now",
+      },
+      ...prev.slice(0, 7),
+    ]);
+    setNewMemoryPulse(true);
+    setTimeout(() => setNewMemoryPulse(false), 2400);
+  });
 
   const activeGrants = grants.filter((g) => g.granted).length;
 
@@ -212,6 +243,7 @@ export function MemoryPassport() {
             grants={grants}
             onToggleGrant={toggleGrant}
             activeGrants={activeGrants}
+            pulse={newMemoryPulse}
           />
           <ConsentFeed feed={feed} />
         </div>
@@ -248,12 +280,14 @@ function PassportCard({
   grants,
   onToggleGrant,
   activeGrants,
+  pulse,
 }: {
   memories: Memory[];
   onSelect: (m: Memory) => void;
   grants: AgentGrant[];
   onToggleGrant: (g: AgentGrant) => void;
   activeGrants: number;
+  pulse: boolean;
 }) {
   return (
     <motion.div
@@ -264,7 +298,11 @@ function PassportCard({
       className="relative space-y-4"
     >
       {/* Passport identity card */}
-      <div className="relative rounded-2xl border border-hairline-strong bg-gradient-to-br from-surface to-surface-2 p-6 lg:p-7 overflow-hidden ring-inset-hairline">
+      <div
+        className={`relative rounded-2xl border bg-gradient-to-br from-surface to-surface-2 p-6 lg:p-7 overflow-hidden ring-inset-hairline transition-all duration-500 ${
+          pulse ? "border-mem/60 glow-mem" : "border-hairline-strong"
+        }`}
+      >
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2.5">
             <div className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-mem/15 border border-mem/30">
@@ -304,7 +342,10 @@ function PassportCard({
       <div className="rounded-2xl border border-hairline bg-surface overflow-hidden">
         <div className="px-4 h-10 flex items-center justify-between border-b border-hairline bg-surface-2/40">
           <span className="text-[11.5px] font-mono text-ink-mute">memories · click to inspect</span>
-          <span className="text-[11px] font-mono text-mem">{memories.length} stored</span>
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-mem">
+            {pulse && <Zap className="h-3 w-3 animate-mem-pulse" />}
+            {memories.length} stored
+          </span>
         </div>
         <div className="p-3 space-y-2 max-h-[320px] overflow-y-auto scroll-thin">
           {memories.map((m) => {

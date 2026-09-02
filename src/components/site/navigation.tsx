@@ -19,11 +19,13 @@ const SECTION_IDS = [
   "demo",
   "developers",
   "production",
+  "architecture",
   "passport",
   "use-cases",
   "signals",
   "pricing",
   "faq",
+  "changelog",
   "cta",
 ];
 
@@ -41,6 +43,7 @@ const NAV = [
     items: [
       { label: "Engines", desc: "General + domain schemas", href: "#product" },
       { label: "How it works", desc: "Ingest → Retrieve pipeline", href: "#how" },
+      { label: "Architecture", desc: "System diagram & request flow", href: "#architecture" },
       { label: "Playground", desc: "Live memory decision demo", href: "#demo" },
       { label: "Production controls", desc: "Quality, conflict, provenance", href: "#production" },
     ],
@@ -69,6 +72,7 @@ const NAV = [
       { label: "Docs", desc: "Quickstart, concepts, API", href: "#developers" },
       { label: "Pricing", desc: "Developer · Team · Enterprise", href: "#pricing" },
       { label: "Signals", desc: "What teams say", href: "#signals" },
+      { label: "Changelog", desc: "Shipped + roadmap", href: "#changelog" },
       { label: "FAQ", desc: "Questions before shipping", href: "#faq" },
       { label: "Contact", desc: "Talk to us about onboarding", href: "#cta" },
     ],
