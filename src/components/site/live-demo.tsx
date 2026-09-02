@@ -140,39 +140,83 @@ export function LiveDemo() {
     setDoneStages([]);
     setActiveStage(null);
 
-    // Sequentially reveal stages while the API call is in flight,
-    // so the user sees the pipeline "flowing" in real time.
-    const stageRevealTimers: ReturnType<typeof setTimeout>[] = [];
-    STAGES.forEach((s, i) => {
-      stageRevealTimers.push(
-        setTimeout(() => setActiveStage(s.id), 250 + i * 350)
-      );
-      stageRevealTimers.push(
-        setTimeout(() => {
-          setDoneStages((prev) => [...prev, s.id]);
-        }, 550 + i * 350)
-      );
-    });
+    // Live trace buffer for the decision log
+    const trace: { stage: string; status: "done"; detail: string; at: string }[] = [];
+    let streamError: string | null = null;
 
     try {
-      const res = await fetch("/api/memory/extract", {
+      const res = await fetch("/api/memory/extract-stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input }),
       });
-      const data: ApiResponse = await res.json();
 
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || `HTTP ${res.status}`);
+      if (!res.ok || !res.body) {
+        throw new Error(`HTTP ${res.status}`);
       }
 
-      // Clear any pending timers and complete all stages
-      stageRevealTimers.forEach(clearTimeout);
-      setDoneStages(STAGES.map((s) => s.id));
-      setActiveStage(null);
-      setResult(data);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      // Read SSE stream
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // Parse complete SSE events (separated by \n\n)
+        const events = buffer.split("\n\n");
+        buffer = events.pop() ?? "";
+
+        for (const evt of events) {
+          const line = evt.trim();
+          if (!line.startsWith("data: ")) continue;
+          const json = line.slice(6);
+          let data: any;
+          try {
+            data = JSON.parse(json);
+          } catch {
+            continue; // ignore parse errors on partial chunks
+          }
+          if (data.type === "stage") {
+            // Highlight the stage as active briefly, then mark done
+            setActiveStage(data.stage);
+            setTimeout(() => {
+              setDoneStages((prev) =>
+                prev.includes(data.stage) ? prev : [...prev, data.stage]
+              );
+              setActiveStage((cur) => (cur === data.stage ? null : cur));
+            }, 200);
+            trace.push({
+              stage: data.stage,
+              status: "done",
+              detail: data.detail,
+              at: data.at,
+            });
+          } else if (data.type === "result") {
+            const apiResult: ApiResponse = {
+              ok: true,
+              job_id: data.job_id,
+              tenant: data.tenant,
+              user: data.user,
+              input: data.input,
+              trace,
+              memory: data.memory,
+              governed_context: data.governed_context,
+              latency_ms: data.latency_ms,
+            };
+            setResult(apiResult);
+            // Ensure all stages are marked done
+            setDoneStages(STAGES.map((s) => s.id));
+            setActiveStage(null);
+          } else if (data.type === "error") {
+            streamError = data.message;
+          }
+        }
+      }
+      if (streamError) throw new Error(streamError);
     } catch (e) {
-      stageRevealTimers.forEach(clearTimeout);
       setError(e instanceof Error ? e.message : "Extraction failed");
     } finally {
       setRunning(false);
@@ -223,7 +267,7 @@ export function LiveDemo() {
               </span>
               <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-mem">
                 <span className="h-1.5 w-1.5 rounded-full bg-mem animate-mem-pulse" />
-                live · llm-backed
+                {running ? "streaming · sse" : "live · llm-backed"}
               </span>
             </div>
             <div className="p-5 space-y-4">

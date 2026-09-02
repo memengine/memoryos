@@ -187,6 +187,13 @@
   section[id] {
     scroll-margin-top: 80px;
   }
+
+  /* Performance: skip rendering work for offscreen sections.
+     Only applies content-visibility to sections past the hero. */
+  section[id]:not(#top) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv01", "cv02", "cv03";
@@ -198,6 +205,34 @@
   ::selection {
     background: var(--mem);
     color: var(--background);
+  }
+
+  /* Global focus-visible styling for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--mem);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  button:focus-visible,
+  a:focus-visible {
+    outline-offset: 2px;
+  }
+
+  /* Custom scrollbar for the page */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--hairline-strong);
+    border-radius: 999px;
+    border: 2px solid var(--background);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--mem-dim);
   }
 }
 

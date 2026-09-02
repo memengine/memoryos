@@ -82,7 +82,7 @@ export function TypingTerminal() {
   return (
     <div
       ref={ref}
-      className="rounded-xl border border-hairline bg-[#0A0B0D] overflow-hidden ring-inset-hairline"
+      className="rounded-xl border border-hairline bg-background overflow-hidden ring-inset-hairline shadow-lg shadow-black/20 dark:bg-[#0A0B0D]"
     >
       <div className="flex items-center justify-between px-3 h-8 border-b border-hairline bg-surface-2/40">
         <div className="flex items-center gap-1.5">

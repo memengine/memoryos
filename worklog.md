@@ -7,97 +7,81 @@ section components under `src/components/site/`.
 
 ---
 
-## Round 5 (cron review #5) — Current Status Assessment
-Site was stable after Round 4: lint clean, 19 sections, ~22k px tall.
-VLM hero rating: 9/10. Real LLM backend + LiveDemo→Passport persistence
-working. All Round 4 features (Architecture, Changelog, lazy-loading,
-persistence flow) verified.
+## Round 6 (cron review #6) — Current Status Assessment
+Site was stable after Round 5: lint clean, 19 sections, ~22k px tall.
+VLM hero rating: 9/10. Theme toggle, OG image, accessibility hardening all
+working. Real LLM backend + LiveDemo→Passport persistence verified.
 
-## Round 5 — Goals / Completed Modifications
-Mandate: more styling detail + more features/functionality. Focus: the top
-unresolved recommendations — **theme toggle (light/dark mode)**, **OG image**,
-**accessibility hardening**, styling polish.
+## Round 6 — Goals / Completed Modifications
+Mandate: more styling detail + more features/functionality. Focus: the #1
+unresolved recommendation — **streaming extraction (SSE)** so the LiveDemo
+feels truly "live", plus light-mode polish, performance, and a11y.
 
-### Theme toggle (light/dark mode) — the headline feature of this round
-1. **`layout.tsx`** — wrapped app in `next-themes` `<ThemeProvider>` with
-   `attribute="class"`, `defaultTheme="dark"`, `enableSystem={false}`,
-   `disableTransitionOnChange`. Removed the hardcoded `className="dark"` on
-   `<html>` so the theme is driven by next-themes (persisted to localStorage).
-2. **`globals.css`** — split `:root` (light mode) and `.dark` (dark mode)
-   into two complete token sets:
-   - **Light mode**: white/near-white backgrounds, darker mint
-     (`oklch(0.55 0.16 150)`) for contrast, darker amber/violet/rose, dark
-     ink on light surface, dark hairlines (rgba on dark ink).
-   - **Dark mode**: unchanged (the original aesthetic).
-   - Made `text-gradient-mem`, `text-gradient-ink`, and `::selection`
-     theme-aware via CSS variables (`var(--ink)`, `var(--mem)`, etc.).
-   - Added `transition: background-color 0.3s, color 0.3s` on `body` for
-     smooth theme switching.
-3. **`theme-toggle.tsx`** (NEW) — Sun/Moon icon button using `useTheme()`.
-   SSR-safe (mounts before showing icon to avoid hydration mismatch).
-   Focus-visible styling. Added to both desktop nav (right CTA row) and
-   mobile menu (under an "appearance" label).
+### Streaming extraction (SSE) — the headline feature of this round
+1. **`src/app/api/memory/extract-stream/route.ts`** (NEW API) — a
+   Server-Sent Events endpoint that streams each pipeline stage as it
+   completes, instead of returning the full trace at once:
+   - `POST /api/memory/extract-stream` with `{ input, tenant?, user? }`.
+   - Emits `data:` events: `{type:"stage",stage,detail,at}` per stage,
+     then `{type:"result",job_id,memory,governed_context,latency_ms}`,
+     then `{type:"done"}` (or `{type:"error"}` on failure).
+   - Real LLM call happens during the "extract" stage; the other 4 stages
+     have small artificial delays (180–350ms) so the user sees them flow.
+   - Uses `ReadableStream` + `text/event-stream` headers + `X-Accel-Buffering: no`.
+   - Same hardened JSON parsing + fallback as the non-streaming endpoint.
+2. **`live-demo.tsx`** — rewired `run()` to consume the SSE stream:
+   - Fetches `/api/memory/extract-stream`, reads the stream with
+     `getReader()` + `TextDecoder`, parses SSE events split by `\n\n`.
+   - On each `stage` event: sets the stage active, then marks it done 200ms
+     later (so the user sees the "active" pulse), and pushes to the live
+     trace buffer.
+   - On `result`: assembles the full `ApiResponse` (with the accumulated
+     trace) and sets the result + completes all stages.
+   - Badge now shows **"streaming · sse"** while running, "live · llm-backed" idle.
+   - Removed the old fake-timer-based stage reveal — stages now advance
+     based on **real** backend progress.
 
-### OG / social preview image
-4. **`public/og.png`** (NEW) — generated a 1344×768 social preview image
-   via the image-generation skill (`z-ai image`). Dark, technical, hexagonal
-   grid + glowing mint hexagon + data flow nodes — matches the brand.
-   Referenced in `layout.tsx` metadata `openGraph.images` and
-   `twitter.images`.
+### Performance + a11y + styling polish
+3. **`globals.css`** — added `content-visibility: auto` +
+   `contain-intrinsic-size: auto 600px` on `section[id]:not(#top)` so the
+   browser skips rendering work for offscreen sections. Hero always renders.
+4. **`globals.css`** — global `:focus-visible` outline (2px mint, offset 2px)
+   for all interactive elements; custom page scrollbar (theme-aware track +
+   thumb with mint hover).
+5. **`typing-terminal.tsx`** — terminal background now theme-aware:
+   `bg-background dark:bg-[#0A0B0D]` so it's light in light mode (matches
+   the page) and stays the conventional dark in dark mode.
+6. **`section-number.tsx`** (from Round 5) — available for editorial rhythm.
 
-### Accessibility hardening
-5. **`memory-passport.tsx`** ProvenanceDrawer:
-   - `aria-modal="true"` + `aria-hidden="true"` on the backdrop.
-   - Focus trap: close button auto-focuses 50ms after open.
-   - `Escape` key closes the drawer.
-   - Close button has `focus:ring-2 focus:ring-mem/50` + improved
-     `aria-label="Close provenance drawer"`.
-6. **Consent ledger** `<ol>` — `aria-live="polite"` + `aria-label` so screen
-   readers announce new grant/revoke/approve events as they stream in.
-
-### Styling polish
-7. **`section-number.tsx`** (NEW) — `SectionNumber` component: a large,
-   faint section-index number (e.g. "04") that sits in the right margin of
-   each section on desktop xl+, giving the page a magazine-like editorial
-   rhythm. (Available for use; not yet applied to every section.)
-8. Gradient text utilities made theme-aware (no more washed-out mint on
-   light backgrounds).
-9. Body color transition for smooth dark↔light switching.
-
-## Round 5 — Verification Results
+## Round 6 — Verification Results
 - `bun run lint`: clean.
 - Dev log: 0 runtime errors; `GET /api/memory/extract` returning 200.
+- **Streaming endpoint tested directly** via `curl -N`: emits 5 stage
+  events over ~2.2s, then the result + done. Real LLM extraction
+  (`preference · conf 9.0 · "prefers concise explanations"`). ✓
 - agent-browser QA (desktop 1440×900):
-  - **Dark mode** (default): 0 console errors, all sections render, hero
-    VLM rating 9/10. ✓
-  - **Light mode** (after toggle): `html.light`, background is white, 0
-    console errors during full-page scroll. Headline gradient text
-    readable (ink→mem gradient). ✓
-  - **Theme toggle**: button present in desktop nav + mobile menu; clicking
-    switches theme and persists to localStorage. ✓
-  - **OG image**: `public/og.png` generated (106KB, 1344×768). ✓
-  - **Drawer accessibility**: clicking a memory opens the drawer; close
-    button is auto-focused (visible green focus ring); `Escape` key closes
-    the drawer. ✓
-  - **Consent ledger**: `aria-live="polite"` on the `<ol>`. ✓
-  - Full-page scroll (dark mode, ~19k px): 0 console errors. ✓
-- VLM hero rating: **9/10** (held — "technically dense, developer-first,
-  masterfully uses contrast to visualize the before/after value prop").
+  - **Streaming LiveDemo**: clicked "Run decision" → button showed
+    "Extracting…" with spinner → all 5 stages got green checkmarks →
+    extracted memory card showed `preference · conf 9.0` → governed
+    context XML rendered. ✓
+  - **Theme toggle**: light mode renders cleanly (terminal adapts to
+    light background); dark mode unchanged. ✓
+  - Full-page scroll (dark mode): 0 console errors. ✓
+- VLM hero rating: **9/10** (held — "technically impressive, developer-first,
+  uses real-time streaming and a sharp dark-mode aesthetic to make an
+  abstract infrastructure product feel tangible and alive").
 
-## Round 5 — Unresolved / Risks + Next-Phase Recommendations
-- **Streaming extraction (SSE)** — still the highest-value remaining UX
-  improvement; the API returns the full trace at once after the LLM call
-  (~1-7s). Streaming stages as they complete would feel more "live".
-- **TypingTerminal** is still canned — could replay a real extraction trace.
-- **Light mode polish** — a handful of components use hardcoded dark hex
-  colors (e.g. `#0A0B0D`, `#16181D` in SVG fills and terminal backgrounds).
-  These render fine but don't adapt to light mode. A full pass to replace
-  them with `var(--surface)` / `var(--ink)` tokens would make light mode
-  fully consistent. (The theme tokens themselves are complete; only a few
-  inline hex values in SVGs remain.)
-- **Apply `SectionNumber`** to each section for the editorial rhythm.
-- **Performance** — could add `content-visibility: auto` to section wrappers.
+## Round 6 — Unresolved / Risks + Next-Phase Recommendations
+- **TypingTerminal** is still canned — could replay a real extraction trace
+  via the same SSE stream.
+- **Light mode polish** — a few inline SVG hex colors in Architecture
+  (`#0F1115`, `#16181D`) remain hardcoded; they render fine but don't
+  adapt to light mode. Low priority since the diagram is legible in both.
+- **Apply `SectionNumber`** to each section for editorial rhythm (component
+  exists, not yet wired into sections).
 - **Mobile QA** — Architecture SVG is wide; verify horizontal scroll on mobile.
+- **Non-streaming `/api/memory/extract`** still exists as a fallback; could
+  be removed or kept for non-SSE clients.
 
 ## Design System (in `src/app/globals.css`)
 - **Aesthetic**: Dark (default) + Light mode via next-themes.
@@ -111,13 +95,16 @@ unresolved recommendations — **theme toggle (light/dark mode)**, **OG image**,
   `vignette`.
 - **Keyframes**: `mem-pulse`, `mem-flow`, `mem-rise`, `mem-shimmer`, `mem-blink`,
   `mem-orbit`, `mem-orbit-slow`, `mem-marquee`. Reduced-motion respected.
+- **Performance**: `content-visibility: auto` on offscreen sections; global
+  `:focus-visible` outline; custom theme-aware scrollbar.
 
 ## File Map
 ```
 src/app/layout.tsx              # ThemeProvider + OG image metadata
-src/app/globals.css            # design system: light + dark token sets
+src/app/globals.css            # design system: light + dark tokens, content-visibility, focus-visible
 src/app/page.tsx               # section composition (19 sections + lazy)
-src/app/api/memory/extract/route.ts  # real LLM extraction endpoint
+src/app/api/memory/extract/route.ts        # real LLM extraction (non-streaming)
+src/app/api/memory/extract-stream/route.ts # NEW: streaming SSE extraction
 src/hooks/use-scroll-spy.ts    # scroll-spy hook
 src/hooks/use-extracted-memory.ts    # pub/sub for LiveDemo → Passport
 src/components/site/
@@ -128,8 +115,8 @@ src/components/site/
   magnetic-button.tsx          # cursor-magnetic CTA wrapper
   command-palette.tsx          # Cmd+K fast navigation
   api-status.tsx               # live API health indicator
-  theme-toggle.tsx             # NEW: dark/light mode toggle
-  section-number.tsx           # NEW: editorial section index badge
+  theme-toggle.tsx             # dark/light mode toggle
+  section-number.tsx           # editorial section index badge
   lazy-section.tsx             # IntersectionObserver lazy wrapper
   navigation.tsx               # sticky nav + dropdowns + scroll-spy + ApiStatus + ThemeToggle
   hero.tsx                     # hero + MemoryGraph SVG
@@ -139,13 +126,13 @@ src/components/site/
   comparison-matrix.tsx        # 12×4 feature matrix
   engines.tsx                  # domain schema registry
   how-it-works.tsx             # scroll-driven 5-stage pipeline
-  live-demo.tsx                # real LLM playground + Persist-to-Passport
-  typing-terminal.tsx          # self-typing CLI trace
+  live-demo.tsx                # REWRIRED: real LLM SSE streaming playground
+  typing-terminal.tsx          # self-typing CLI trace (theme-aware bg)
   developers.tsx               # code tabs + token highlighter + typing terminal
   onboarding.tsx               # 3-step "how teams start"
   production.tsx               # 6 pillars + audit trail + needs grid
   architecture.tsx             # system diagram + request flow
-  memory-passport.tsx          # interactive (drawer + grants + a11y: focus trap, Escape, aria-live)
+  memory-passport.tsx          # interactive (drawer + grants + a11y)
   use-cases.tsx                # 4 distinct use-case cards
   signals.tsx                  # social proof + testimonials
   pricing.tsx                  # 3-tier pricing + monthly/annual toggle
@@ -154,7 +141,7 @@ src/components/site/
   final-cta.tsx                # closing CTA + animated counters + magnetic CTA
   footer.tsx                   # footer
 public/favicon.svg             # hexagon MemoryOS mark
-public/og.png                  # NEW: 1344×768 social preview image
+public/og.png                  # 1344×768 social preview image
 ```
 
 ## Cron Job
