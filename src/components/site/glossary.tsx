@@ -133,7 +133,7 @@ function GlossaryCard({
       onClick={onToggle}
       aria-expanded={isOpen}
       className={cn(
-        "group text-left rounded-xl border bg-surface p-5 transition-colors",
+        "group text-left rounded-xl border bg-surface p-5 transition-colors card-lift",
         isOpen
           ? "border-mem/40 bg-mem/[0.04]"
           : "border-hairline hover:border-hairline-strong hover:bg-surface-2/50"

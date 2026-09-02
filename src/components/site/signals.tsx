@@ -127,7 +127,7 @@ function TestimonialCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
-      className="relative rounded-2xl border border-hairline bg-surface p-6 lg:p-7 hover:bg-surface-2/50 transition-colors overflow-hidden group"
+      className="relative rounded-2xl border border-hairline bg-surface p-6 lg:p-7 hover:bg-surface-2/50 transition-colors overflow-hidden group card-lift"
     >
       <div
         className="absolute -top-px left-0 right-0 h-px"

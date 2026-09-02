@@ -105,7 +105,7 @@ function StepCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
-      className="group relative rounded-2xl border border-hairline bg-surface p-6 lg:p-7 hover:bg-surface-2/50 transition-colors overflow-hidden"
+      className="group relative rounded-2xl border border-hairline bg-surface p-6 lg:p-7 hover:bg-surface-2/50 transition-colors overflow-hidden card-lift"
     >
       {/* connector arrow between steps (desktop) */}
       {index < 2 && (
