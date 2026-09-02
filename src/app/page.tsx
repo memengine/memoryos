@@ -14,6 +14,7 @@ import { Developers } from "@/components/site/developers";
 import { Onboarding } from "@/components/site/onboarding";
 import { Production } from "@/components/site/production";
 import { Architecture } from "@/components/site/architecture";
+import { TrustCenter } from "@/components/site/trust-center";
 import { MemoryPassport } from "@/components/site/memory-passport";
 import { UseCases } from "@/components/site/use-cases";
 import { Signals } from "@/components/site/signals";
@@ -53,6 +54,9 @@ export default function Home() {
         </LazySection>
         <LazySection id="architecture-wrap" minHeight={600}>
           <Architecture />
+        </LazySection>
+        <LazySection id="trust-wrap" minHeight={600}>
+          <TrustCenter />
         </LazySection>
         <LazySection id="passport-wrap" minHeight={600}>
           <MemoryPassport />

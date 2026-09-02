@@ -7,67 +7,58 @@ section components under `src/components/site/`.
 
 ---
 
-## Round 9 (cron review #9) — Current Status Assessment
-Site was stable after Round 8: lint clean, 21 sections, ~23k px tall.
-VLM hero rating: 9/10. Metrics dashboard, editorial SectionNumber badges,
-streaming SSE, theme toggle all verified. Real LLM backend live.
+## Round 10 (cron review #10) — Current Status Assessment
+Site was stable after Round 9: lint clean, 21 sections, ~23k px tall.
+VLM hero rating: 9/10. Real SSE streaming (LiveDemo + TypingTerminal),
+theme toggle, Metrics dashboard, editorial SectionNumber badges all
+verified. Real LLM backend live.
 
-## Round 9 — Goals / Completed Modifications
-Mandate: more styling detail + more features/functionality. Focus: the top
-unresolved recommendation — **wire TypingTerminal to replay real extraction
-traces via SSE** + styling polish + mobile QA.
+## Round 10 — Goals / Completed Modifications
+Mandate: more styling detail + more features/functionality. Focus: a new
+enterprise-buyer-facing **Trust Center** section — security & compliance
+posture (SOC 2, encryption, isolation, auditability, residency).
 
-### TypingTerminal → real SSE streaming (the headline feature)
-1. **`typing-terminal.tsx`** — REWRITTEN to call the real
-   `/api/memory/extract-stream` endpoint and type out the actual trace as
-   stages arrive over SSE:
-   - Cycles through 4 sample inputs ("I prefer concise explanations…",
-     "We're building a B2B SaaS…", "Actually, switch me to TypeScript…",
-     "My goal this quarter…").
-   - For each cycle: POSTs to the SSE endpoint, consumes the stream, and
-     types each stage's detail character-by-character as it arrives
-     (18-32ms per char, with a blinking green cursor on the active line).
-   - After the result event, shows `memory#{job_id} stored · {latency}ms ·
-     prompt-ready`, then pauses 2.4s and advances to the next sample.
-   - Badge shows "streaming" while a cycle is active, "live" when idle.
-   - Error handling: on failure, types "extraction failed · retrying…".
-   - **This is genuinely live** — the trace comes from the real LLM, not a
-     canned script. Every cycle produces a different extraction based on
-     the sample input.
+### New section: Trust Center
+1. **`trust-center.tsx`** (NEW SECTION) — security, compliance, and
+   operational posture. Enterprise-buyer-facing:
+   - **Compliance badges** (4): SOC 2 Type II (in progress), GDPR
+     (compliant), DPA (available), HIPAA-ready (roadmap badge).
+   - **6 security pillars** (interactive, click to expand): Encryption
+     (TLS 1.3 + AES-256 + per-tenant keys), Access control (RBAC +
+     scoped keys), Data residency (US/EU/APAC, no cross-region without
+     consent), Auditability (every write/retrieval logged), Tenant
+     isolation (enforced at retrieval), Retention & deletion (30-day
+     right-to-be-forgotten).
+   - **Bottom row**: uptime card (99.97% / status.memoryo.dev /
+     "operational" pulse) + security contact card ("Contact security →").
+   - SectionNumber "08 · trust center" editorial badge.
+   - Each pillar uses `card-lift` hover + animated chevron + expandable
+     detail with the full explanation.
 
-### Styling polish
-2. **`globals.css`** — added two new utilities:
-   - `.card-lift` — premium hover micro-interaction: `translateY(-2px)` +
-     `box-shadow: 0 12px 32px -12px` with a 0.25s cubic-bezier transition.
-   - `.section-divider` + `.section-divider-glow` — gradient hairlines that
-     mark section transitions (transparent → hairline-strong → transparent;
-     glow variant uses `var(--mem)`).
-3. Applied `.card-lift` to: Signals testimonial cards, Glossary term cards,
-   Onboarding step cards — all now lift on hover for a premium feel.
+### Navigation + footer + command palette integration
+2. **`navigation.tsx`** — added "Trust center" to the Product dropdown
+   (desc "Security & compliance posture"); added `trust` to SECTION_IDS
+   for scroll-spy.
+3. **`footer.tsx`** — added Trust center to the Product column.
+4. **`command-palette.tsx`** — added "Trust center · security &
+   compliance" to the Product command group.
+5. **`page.tsx`** — added `<TrustCenter />` (in a `LazySection`) between
+   Architecture and MemoryPassport. Page now has **22 sections**.
 
-### Mobile QA
-4. Verified all 21 sections load on mobile (iPhone 16 Pro, 390px). The
-   lazy-loading + `content-visibility: auto` combination requires multiple
-   scroll-to-bottom triggers on mobile but all sections eventually render.
-   Metrics sparkline SVG renders correctly on mobile (viewBox 600, responsive).
-   Architecture SVG is wide but horizontally scrollable.
-
-## Round 9 — Verification Results
-- `bun run lint`: clean (removed an unused eslint-disable directive).
+## Round 10 — Verification Results
+- `bun run lint`: clean.
 - Dev log: 0 runtime errors; `GET /api/memory/extract` returning 200.
 - agent-browser QA (desktop 1440×900):
-  - **TypingTerminal**: calls the real SSE endpoint; badge shows "streaming";
-    types real `client.add(...)` + stage traces (ingest/extract/reconcile/
-    govern/retrieve) with a blinking green cursor; cycles through 4 samples. ✓
-  - **Card hover lift**: Signals/Glossary/Onboarding cards now lift on hover. ✓
-  - Full-page scroll (~21k px, 16 sections rendered): 0 console errors. ✓
-- Mobile QA (iPhone 16 Pro, 390px):
-  - All 21 sections eventually load (lazy-loading works). ✓
-  - Metrics sparkline SVG renders correctly on mobile. ✓
-- VLM hero rating: 8/10 (this screenshot caught the actual hero — "polished,
-  developer-focused, strong visual hierarchy, clear value proposition").
+  - Fresh load: 0 console errors, dark mode. ✓
+  - **Trust Center section**: renders with 4 compliance badges (SOC 2 /
+    GDPR / DPA / HIPAA-ready with roadmap tag), 6 interactive security
+    pillars (click to expand), uptime + security contact row.
+    SectionNumber "08 · trust center" visible in background. ✓
+  - Full-page scroll (~23.6k px, 20 sections rendered): 0 console errors. ✓
+- VLM hero rating: 8/10 (held — "visually striking, technically
+  sophisticated, effective dark-mode aesthetic").
 
-## Round 9 — Unresolved / Risks + Next-Phase Recommendations
+## Round 10 — Unresolved / Risks + Next-Phase Recommendations
 - **Light mode polish** — a few inline SVG hex colors in Architecture
   (`#0F1115`, `#16181D`) remain hardcoded; low priority.
 - **Glossary keyboard nav** — arrow-key navigation between cards could be
@@ -78,9 +69,8 @@ traces via SSE** + styling polish + mobile QA.
   could tune the IntersectionObserver rootMargin or remove
   content-visibility on mobile for smoother scroll.
 - **Non-streaming `/api/memory/extract`** still exists as a fallback.
-- **TypingTerminal rate-limiting** — cycles every ~6-8s; on a slow network
-  the LLM call could take longer than the pause. Currently fine but worth
-  monitoring.
+- **Trust Center** — could add a real status page embed or a security
+  questionnaire download CTA.
 
 ## Design System (in `src/app/globals.css`)
 - **Aesthetic**: Dark (default) + Light mode via next-themes.
@@ -101,9 +91,9 @@ traces via SSE** + styling polish + mobile QA.
 ```
 src/app/layout.tsx              # ThemeProvider + OG image metadata
 src/app/globals.css            # design system + card-lift + section-divider utilities
-src/app/page.tsx               # section composition (21 sections + lazy)
+src/app/page.tsx               # section composition (22 sections + lazy)
 src/app/api/memory/extract/route.ts        # real LLM extraction (non-streaming)
-src/app/api/memory/extract-stream/route.ts # streaming SSE extraction (used by LiveDemo + TypingTerminal)
+src/app/api/memory/extract-stream/route.ts # streaming SSE extraction
 src/hooks/use-scroll-spy.ts    # scroll-spy hook
 src/hooks/use-extracted-memory.ts    # pub/sub for LiveDemo → Passport
 src/components/site/
@@ -112,10 +102,10 @@ src/components/site/
   back-to-top.tsx              # floating back-to-top button
   animated-counter.tsx         # deterministic count-up
   magnetic-button.tsx          # cursor-magnetic CTA wrapper
-  command-palette.tsx          # Cmd+K fast navigation
+  command-palette.tsx          # Cmd+K fast navigation (+ trust center)
   api-status.tsx               # live API health indicator
   theme-toggle.tsx             # dark/light mode toggle
-  section-number.tsx           # editorial section index badge (9 sections)
+  section-number.tsx           # editorial section index badge (10 sections)
   lazy-section.tsx             # IntersectionObserver lazy wrapper
   navigation.tsx               # sticky nav + dropdowns + scroll-spy + ApiStatus + ThemeToggle
   hero.tsx                     # hero + MemoryGraph SVG
@@ -126,11 +116,12 @@ src/components/site/
   engines.tsx                  # domain schema registry
   how-it-works.tsx             # scroll-driven 5-stage pipeline + SectionNumber "02"
   live-demo.tsx                # real LLM SSE streaming + SectionNumber "03" + Persist-to-Passport
-  typing-terminal.tsx          # REWRITTEN: real SSE streaming trace replay (cycles 4 samples)
+  typing-terminal.tsx          # real SSE streaming trace replay (cycles 4 samples)
   developers.tsx               # code tabs + token highlighter + typing terminal
   onboarding.tsx               # 3-step "how teams start" + card-lift
   production.tsx               # 6 pillars + audit trail + needs grid + SectionNumber "06"
   architecture.tsx             # system diagram + request flow + SectionNumber "07"
+  trust-center.tsx             # NEW: compliance badges + 6 security pillars + uptime row + SectionNumber "08"
   memory-passport.tsx          # interactive (drawer + grants + a11y)
   use-cases.tsx                # 4 distinct use-case cards
   signals.tsx                  # social proof + testimonials + card-lift
@@ -140,7 +131,7 @@ src/components/site/
   faq.tsx                      # 8-question accordion + SectionNumber "13"
   changelog.tsx                # shipped + roadmap timeline + SectionNumber "14"
   final-cta.tsx                # closing CTA + animated counters + magnetic CTA
-  footer.tsx                   # footer
+  footer.tsx                   # footer (+ trust center link)
 public/favicon.svg             # hexagon MemoryOS mark
 public/og.png                  # 1344×768 social preview image
 ```

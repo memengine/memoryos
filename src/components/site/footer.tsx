@@ -10,6 +10,7 @@ const COLS = [
       { label: "Playground", href: "#demo" },
       { label: "How it works", href: "#how" },
       { label: "Architecture", href: "#architecture" },
+      { label: "Trust center", href: "#trust" },
       { label: "Production controls", href: "#production" },
       { label: "Memory Passport", href: "#passport" },
       { label: "Pricing", href: "#pricing" },

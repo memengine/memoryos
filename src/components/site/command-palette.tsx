@@ -118,6 +118,10 @@ export function CommandPalette() {
               <ShieldCheck className="h-4 w-4 text-mem" />
               <span>Production foundations</span>
             </CommandItem>
+            <CommandItem onSelect={() => go("#trust")} className="gap-2.5">
+              <ShieldCheck className="h-4 w-4 text-mem" />
+              <span>Trust center · security & compliance</span>
+            </CommandItem>
             <CommandItem onSelect={() => go("#passport")} className="gap-2.5">
               <KeyRound className="h-4 w-4 text-mem" />
               <span>Memory Passport</span>
