@@ -6,6 +6,29 @@ import { Menu, X, ArrowRight, BookOpen } from "lucide-react";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useScrollSpy } from "@/hooks/use-scroll-spy";
+
+const SECTION_IDS = [
+  "top",
+  "problem",
+  "fits",
+  "product",
+  "how",
+  "demo",
+  "developers",
+  "production",
+  "passport",
+  "use-cases",
+  "cta",
+];
+
+// Map each top-level nav group to the section it represents (for active highlight)
+const GROUP_TO_SECTION: Record<string, string> = {
+  Product: "product",
+  Developers: "developers",
+  Solutions: "use-cases",
+  Resources: "production",
+};
 
 const NAV = [
   {
@@ -50,6 +73,7 @@ export function Navigation() {
   const [scrolled, setScrolled] = React.useState(false);
   const [openMenu, setOpenMenu] = React.useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const activeSection = useScrollSpy(SECTION_IDS, 140);
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -77,7 +101,13 @@ export function Navigation() {
           className="hidden lg:flex items-center"
           onMouseLeave={() => setOpenMenu(null)}
         >
-          {NAV.map((group) => (
+          {NAV.map((group) => {
+            const isActive =
+              activeSection === GROUP_TO_SECTION[group.label] ||
+              (group.label === "Product" &&
+                ["problem", "fits", "how", "demo"].includes(activeSection)) ||
+              (group.label === "Solutions" && activeSection === "passport");
+            return (
             <div
               key={group.label}
               className="relative"
@@ -85,12 +115,21 @@ export function Navigation() {
             >
               <button
                 className={cn(
-                  "px-3.5 py-2 text-[13.5px] font-medium text-ink-soft hover:text-ink transition-colors flex items-center gap-1",
-                  openMenu === group.label && "text-ink"
+                  "relative px-3.5 py-2 text-[13.5px] font-medium transition-colors flex items-center gap-1",
+                  isActive
+                    ? "text-ink"
+                    : "text-ink-soft hover:text-ink"
                 )}
                 aria-expanded={openMenu === group.label}
               >
                 {group.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-active"
+                    className="absolute -bottom-px left-3 right-3 h-px bg-mem"
+                    transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                )}
                 <svg
                   className={cn(
                     "h-3.5 w-3.5 opacity-60 transition-transform",
@@ -141,7 +180,8 @@ export function Navigation() {
                 )}
               </AnimatePresence>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Right side CTAs */}
@@ -191,28 +231,50 @@ export function Navigation() {
             className="lg:hidden border-b border-hairline bg-background/95 backdrop-blur-xl overflow-hidden"
           >
             <div className="container-page py-4 space-y-4 max-h-[80vh] overflow-y-auto scroll-thin">
-              {NAV.map((group) => (
+              {NAV.map((group) => {
+                const groupActive =
+                  activeSection === GROUP_TO_SECTION[group.label] ||
+                  (group.label === "Product" &&
+                    ["problem", "fits", "how", "demo"].includes(activeSection)) ||
+                  (group.label === "Solutions" && activeSection === "passport");
+                return (
                 <div key={group.label}>
-                  <div className="text-[11px] uppercase tracking-[0.14em] text-ink-mute mb-1.5">
-                    {group.label}
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[11px] uppercase tracking-[0.14em] text-ink-mute">
+                      {group.label}
+                    </span>
+                    {groupActive && (
+                      <span className="h-px flex-1 bg-gradient-to-r from-mem/50 to-transparent" />
+                    )}
                   </div>
                   <div className="space-y-0.5">
-                    {group.items.map((item) => (
+                    {group.items.map((item) => {
+                      const itemId = item.href.replace("#", "");
+                      const itemActive = activeSection === itemId;
+                      return (
                       <a
                         key={item.label}
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
-                        className="flex flex-col py-1.5"
+                        className="flex flex-col py-1.5 relative pl-3"
                       >
-                        <span className="text-[14.5px] font-medium text-ink">
+                        {itemActive && (
+                          <span className="absolute left-0 top-2 bottom-2 w-px bg-mem" />
+                        )}
+                        <span className={cn(
+                          "text-[14.5px] font-medium",
+                          itemActive ? "text-mem" : "text-ink"
+                        )}>
                           {item.label}
                         </span>
                         <span className="text-[12px] text-ink-mute">{item.desc}</span>
                       </a>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
-              ))}
+                );
+              })}
               <div className="flex flex-col gap-2 pt-2 border-t border-hairline">
                 <Button
                   asChild

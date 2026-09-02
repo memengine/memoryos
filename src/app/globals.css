@@ -161,6 +161,10 @@
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
   }
+  /* Offset anchored sections for the fixed nav */
+  section[id] {
+    scroll-margin-top: 80px;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv01", "cv02", "cv03";
@@ -349,6 +353,10 @@
 @keyframes mem-orbit {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+@keyframes mem-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 .animate-mem-pulse { animation: mem-pulse 3.2s ease-in-out infinite; }

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Copy, Check, Terminal, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionLabel, SectionHeading } from "./problem";
+import { TypingTerminal } from "./typing-terminal";
 
 type Lang = "python" | "typescript" | "rest" | "mcp";
 
@@ -256,6 +257,37 @@ export function Developers() {
               </AnimatePresence>
             </div>
           </div>
+        </div>
+
+        {/* Live trace terminal — what integration actually looks like at runtime */}
+        <div className="mt-6 grid lg:grid-cols-[1fr_1.1fr] gap-5 items-center">
+          <div>
+            <div className="text-[12px] uppercase tracking-[0.16em] text-mem font-mono">
+              what runtime looks like
+            </div>
+            <h3 className="mt-3 text-[22px] sm:text-[26px] font-semibold tracking-tight text-ink">
+              A full memory lifecycle, in one terminal.
+            </h3>
+            <p className="mt-3 text-[14.5px] leading-relaxed text-ink-soft max-w-md">
+              Install the SDK, ingest a signal, watch MemoryOS extract, reconcile,
+              govern, and retrieve — then attach the governed context to your
+              next model call. No mockups, no fake chatbot — this is the
+              actual decision path your agents will exercise.
+            </p>
+            <ul className="mt-5 space-y-2">
+              {[
+                "Real add() / get() flow shape",
+                "Per-stage provenance and consent surfaced in the trace",
+                "Compact context, ready to inject into the prompt",
+              ].map((x) => (
+                <li key={x} className="flex items-center gap-2 text-[13.5px] text-ink-soft">
+                  <Check className="h-3.5 w-3.5 text-mem shrink-0" />
+                  {x}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <TypingTerminal />
         </div>
       </div>
     </section>

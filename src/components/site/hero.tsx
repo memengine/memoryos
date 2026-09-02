@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Play, ShieldCheck, Activity, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MagneticButton } from "./magnetic-button";
 
 /**
  * Hero — MemoryOS
@@ -72,16 +73,18 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.12 }}
           className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3"
         >
-          <Button
-            asChild
-            size="lg"
-            className="bg-mem text-[#0A0B0D] hover:bg-mem/90 font-semibold h-12 px-6 rounded-xl text-[15px] gap-2 shadow-[0_0_0_1px_oklch(0.92_0.17_145_/_40%),0_10px_40px_-12px_oklch(0.92_0.17_145_/_60%)]"
-          >
-            <a href="#cta">
-              Try MemoryOS
-              <ArrowRight className="h-4 w-4" />
-            </a>
-          </Button>
+          <MagneticButton strength={10}>
+            <Button
+              asChild
+              size="lg"
+              className="group bg-mem text-[#0A0B0D] hover:bg-mem/90 font-semibold h-12 px-6 rounded-xl text-[15px] gap-2 shadow-[0_0_0_1px_oklch(0.92_0.17_145_/_40%),0_10px_40px_-12px_oklch(0.92_0.17_145_/_60%)] hover:shadow-[0_0_0_1px_oklch(0.92_0.17_145_/_60%),0_14px_50px_-10px_oklch(0.92_0.17_145_/_75%)] transition-shadow"
+            >
+              <a href="#cta">
+                Try MemoryOS
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+            </Button>
+          </MagneticButton>
           <Button
             asChild
             size="lg"

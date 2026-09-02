@@ -4,6 +4,8 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AnimatedCounter } from "./animated-counter";
+import { MagneticButton } from "./magnetic-button";
 
 export function FinalCTA() {
   return (
@@ -36,16 +38,18 @@ export function FinalCTA() {
           </p>
 
           <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button
-              asChild
-              size="lg"
-              className="bg-mem text-[#0A0B0D] hover:bg-mem/90 font-semibold h-12 px-7 rounded-xl text-[15px] gap-2 shadow-[0_0_0_1px_oklch(0.92_0.17_145_/_40%),0_12px_44px_-12px_oklch(0.92_0.17_145_/_70%)]"
-            >
-              <a href="#demo">
-                Try MemoryOS
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </Button>
+            <MagneticButton strength={10}>
+              <Button
+                asChild
+                size="lg"
+                className="group bg-mem text-[#0A0B0D] hover:bg-mem/90 font-semibold h-12 px-7 rounded-xl text-[15px] gap-2 shadow-[0_0_0_1px_oklch(0.92_0.17_145_/_40%),0_12px_44px_-12px_oklch(0.92_0.17_145_/_70%)] hover:shadow-[0_0_0_1px_oklch(0.92_0.17_145_/_60%),0_16px_56px_-10px_oklch(0.92_0.17_145_/_85%)] transition-shadow"
+              >
+                <a href="#demo">
+                  Try MemoryOS
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                </a>
+              </Button>
+            </MagneticButton>
             <Button
               asChild
               size="lg"
@@ -72,14 +76,21 @@ export function FinalCTA() {
 
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-px rounded-xl border border-hairline bg-hairline overflow-hidden text-left">
             {[
-              { k: "5 min", v: "to first memory" },
-              { k: "4 SDKs", v: "Python · TS · REST · MCP" },
-              { k: "0 lock-in", v: "keep your stack" },
-              { k: "SOC 2 ready", v: "tenant isolated" },
+              { value: 5, suffix: " min", label: "to first memory", accent: "text-mem" },
+              { value: 4, suffix: " SDKs", label: "Python · TS · REST · MCP", accent: "text-mem" },
+              { value: 0, suffix: " lock-in", label: "keep your stack", accent: "text-mem" },
+              { value: 99.9, decimals: 1, suffix: "%", label: "tenant isolated · SLA-grade", accent: "text-mem" },
             ].map((x) => (
-              <div key={x.k} className="bg-surface p-4">
-                <div className="text-[16px] font-semibold text-ink tabular">{x.k}</div>
-                <div className="text-[12px] text-ink-mute font-mono">{x.v}</div>
+              <div key={x.label} className="bg-surface p-4">
+                <div className="text-[20px] font-semibold tabular text-ink">
+                  <AnimatedCounter
+                    value={x.value}
+                    decimals={x.decimals || 0}
+                    suffix={x.suffix}
+                    className={x.accent}
+                  />
+                </div>
+                <div className="text-[12px] text-ink-mute font-mono mt-0.5">{x.label}</div>
               </div>
             ))}
           </div>
