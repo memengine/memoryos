@@ -7,81 +7,68 @@ section components under `src/components/site/`.
 
 ---
 
-## Round 6 (cron review #6) — Current Status Assessment
-Site was stable after Round 5: lint clean, 19 sections, ~22k px tall.
-VLM hero rating: 9/10. Theme toggle, OG image, accessibility hardening all
-working. Real LLM backend + LiveDemo→Passport persistence verified.
+## Round 7 (cron review #7) — Current Status Assessment
+Site was stable after Round 6: lint clean, 19 sections, ~21k px tall.
+VLM hero rating: 9/10. Streaming SSE extraction, theme toggle, OG image,
+accessibility hardening all verified working. Real LLM backend live.
 
-## Round 6 — Goals / Completed Modifications
-Mandate: more styling detail + more features/functionality. Focus: the #1
-unresolved recommendation — **streaming extraction (SSE)** so the LiveDemo
-feels truly "live", plus light-mode polish, performance, and a11y.
+## Round 7 — Goals / Completed Modifications
+Mandate: more styling detail + more features/functionality. Focus: a new
+buyer-education section + editorial polish + wiring up the existing
+SectionNumber component.
 
-### Streaming extraction (SSE) — the headline feature of this round
-1. **`src/app/api/memory/extract-stream/route.ts`** (NEW API) — a
-   Server-Sent Events endpoint that streams each pipeline stage as it
-   completes, instead of returning the full trace at once:
-   - `POST /api/memory/extract-stream` with `{ input, tenant?, user? }`.
-   - Emits `data:` events: `{type:"stage",stage,detail,at}` per stage,
-     then `{type:"result",job_id,memory,governed_context,latency_ms}`,
-     then `{type:"done"}` (or `{type:"error"}` on failure).
-   - Real LLM call happens during the "extract" stage; the other 4 stages
-     have small artificial delays (180–350ms) so the user sees them flow.
-   - Uses `ReadableStream` + `text/event-stream` headers + `X-Accel-Buffering: no`.
-   - Same hardened JSON parsing + fallback as the non-streaming endpoint.
-2. **`live-demo.tsx`** — rewired `run()` to consume the SSE stream:
-   - Fetches `/api/memory/extract-stream`, reads the stream with
-     `getReader()` + `TextDecoder`, parses SSE events split by `\n\n`.
-   - On each `stage` event: sets the stage active, then marks it done 200ms
-     later (so the user sees the "active" pulse), and pushes to the live
-     trace buffer.
-   - On `result`: assembles the full `ApiResponse` (with the accumulated
-     trace) and sets the result + completes all stages.
-   - Badge now shows **"streaming · sse"** while running, "live · llm-backed" idle.
-   - Removed the old fake-timer-based stage reveal — stages now advance
-     based on **real** backend progress.
+### New section: Glossary
+1. **`glossary.tsx`** (NEW SECTION) — defines the vocabulary of governed
+   memory. 8 interactive term cards in a 2-column grid, each with a colored
+   accent dot, term name, short description, and a chevron. Click to expand
+   the long definition (animated height + opacity). First card open by
+   default. Terms: Governed state, Provenance, Quality gate, Conflict
+   resolution, Tenant isolation, Memory Passport, Graceful degradation,
+   Domain schema. Buyer-education: a YC startup needs to define its
+   category vocabulary.
 
-### Performance + a11y + styling polish
-3. **`globals.css`** — added `content-visibility: auto` +
-   `contain-intrinsic-size: auto 600px` on `section[id]:not(#top)` so the
-   browser skips rendering work for offscreen sections. Hero always renders.
-4. **`globals.css`** — global `:focus-visible` outline (2px mint, offset 2px)
-   for all interactive elements; custom page scrollbar (theme-aware track +
-   thumb with mint hover).
-5. **`typing-terminal.tsx`** — terminal background now theme-aware:
-   `bg-background dark:bg-[#0A0B0D]` so it's light in light mode (matches
-   the page) and stays the conventional dark in dark mode.
-6. **`section-number.tsx`** (from Round 5) — available for editorial rhythm.
+### Editorial section numbers (wired up)
+2. **`problem.tsx`** + **`live-demo.tsx`** — added `<SectionNumber>` badges
+   ("01 · the problem", "03 · live demo") in the right margin on desktop xl+.
+   Large faint number + mono label — gives the page a magazine-like editorial
+   rhythm. (Component existed since Round 5; now applied to key sections.)
 
-## Round 6 — Verification Results
+### Navigation + footer + command palette integration
+3. **`navigation.tsx`** — added "Glossary" to the Resources dropdown (with
+   desc "Vocabulary of governed memory"); added `glossary` to SECTION_IDS
+   for scroll-spy.
+4. **`footer.tsx`** — added Glossary to the Resources column.
+5. **`command-palette.tsx`** — added "Glossary · vocabulary of governed
+   memory" to the Resources command group.
+6. **`page.tsx`** — added `<Glossary />` (in a `LazySection`) between Signals
+   and Pricing. Page now has **20 sections**.
+
+## Round 7 — Verification Results
 - `bun run lint`: clean.
 - Dev log: 0 runtime errors; `GET /api/memory/extract` returning 200.
-- **Streaming endpoint tested directly** via `curl -N`: emits 5 stage
-  events over ~2.2s, then the result + done. Real LLM extraction
-  (`preference · conf 9.0 · "prefers concise explanations"`). ✓
 - agent-browser QA (desktop 1440×900):
-  - **Streaming LiveDemo**: clicked "Run decision" → button showed
-    "Extracting…" with spinner → all 5 stages got green checkmarks →
-    extracted memory card showed `preference · conf 9.0` → governed
-    context XML rendered. ✓
-  - **Theme toggle**: light mode renders cleanly (terminal adapts to
-    light background); dark mode unchanged. ✓
-  - Full-page scroll (dark mode): 0 console errors. ✓
-- VLM hero rating: **9/10** (held — "technically impressive, developer-first,
-  uses real-time streaming and a sharp dark-mode aesthetic to make an
-  abstract infrastructure product feel tangible and alive").
+  - Fresh load: 0 console errors, dark mode. ✓
+  - **Glossary section**: 8 term cards in a 2-column grid, colored dots,
+    first card ("Governed state") expanded with long definition visible;
+    chevrons animate on toggle. ✓
+  - **SectionNumber badges**: "01 · the problem" present in the Problem
+    section DOM; "03 · live demo" present in the LiveDemo section DOM. ✓
+  - Full-page scroll (~21.4k px, 17 sections rendered): 0 console errors. ✓
+- VLM hero rating: held at ~8–9/10 (this screenshot caught mid-scroll
+  sections; the hero itself is unchanged from Round 6's 9/10).
 
-## Round 6 — Unresolved / Risks + Next-Phase Recommendations
+## Round 7 — Unresolved / Risks + Next-Phase Recommendations
+- **Apply SectionNumber to more sections** — only Problem + LiveDemo have
+  it so far; could extend to HowItWorks, Architecture, Production, etc.
 - **TypingTerminal** is still canned — could replay a real extraction trace
-  via the same SSE stream.
+  via the SSE stream.
 - **Light mode polish** — a few inline SVG hex colors in Architecture
-  (`#0F1115`, `#16181D`) remain hardcoded; they render fine but don't
-  adapt to light mode. Low priority since the diagram is legible in both.
-- **Apply `SectionNumber`** to each section for editorial rhythm (component
-  exists, not yet wired into sections).
-- **Mobile QA** — Architecture SVG is wide; verify horizontal scroll on mobile.
-- **Non-streaming `/api/memory/extract`** still exists as a fallback; could
-  be removed or kept for non-SSE clients.
+  (`#0F1115`, `#16181D`) remain hardcoded; low priority.
+- **Mobile QA** — Architecture SVG is wide; verify horizontal scroll on
+  mobile.
+- **Glossary keyboard nav** — cards are buttons so they're keyboard-
+  accessible, but arrow-key navigation between cards could be added.
+- **Non-streaming `/api/memory/extract`** still exists as a fallback.
 
 ## Design System (in `src/app/globals.css`)
 - **Aesthetic**: Dark (default) + Light mode via next-themes.
@@ -102,9 +89,9 @@ feels truly "live", plus light-mode polish, performance, and a11y.
 ```
 src/app/layout.tsx              # ThemeProvider + OG image metadata
 src/app/globals.css            # design system: light + dark tokens, content-visibility, focus-visible
-src/app/page.tsx               # section composition (19 sections + lazy)
+src/app/page.tsx               # section composition (20 sections + lazy)
 src/app/api/memory/extract/route.ts        # real LLM extraction (non-streaming)
-src/app/api/memory/extract-stream/route.ts # NEW: streaming SSE extraction
+src/app/api/memory/extract-stream/route.ts # streaming SSE extraction
 src/hooks/use-scroll-spy.ts    # scroll-spy hook
 src/hooks/use-extracted-memory.ts    # pub/sub for LiveDemo → Passport
 src/components/site/
@@ -113,20 +100,20 @@ src/components/site/
   back-to-top.tsx              # floating back-to-top button
   animated-counter.tsx         # deterministic count-up
   magnetic-button.tsx          # cursor-magnetic CTA wrapper
-  command-palette.tsx          # Cmd+K fast navigation
+  command-palette.tsx          # Cmd+K fast navigation (+ glossary)
   api-status.tsx               # live API health indicator
   theme-toggle.tsx             # dark/light mode toggle
-  section-number.tsx           # editorial section index badge
+  section-number.tsx           # editorial section index badge (wired to Problem + LiveDemo)
   lazy-section.tsx             # IntersectionObserver lazy wrapper
   navigation.tsx               # sticky nav + dropdowns + scroll-spy + ApiStatus + ThemeToggle
   hero.tsx                     # hero + MemoryGraph SVG
   traction.tsx                 # proof strip + counters + marquee
-  problem.tsx                  # Without/With + failure modes; shared primitives
+  problem.tsx                  # Without/With + failure modes + SectionNumber "01"
   where-it-fits.tsx            # 5-layer stack comparison
   comparison-matrix.tsx        # 12×4 feature matrix
   engines.tsx                  # domain schema registry
   how-it-works.tsx             # scroll-driven 5-stage pipeline
-  live-demo.tsx                # REWRIRED: real LLM SSE streaming playground
+  live-demo.tsx                # real LLM SSE streaming + SectionNumber "03" + Persist-to-Passport
   typing-terminal.tsx          # self-typing CLI trace (theme-aware bg)
   developers.tsx               # code tabs + token highlighter + typing terminal
   onboarding.tsx               # 3-step "how teams start"
@@ -135,11 +122,12 @@ src/components/site/
   memory-passport.tsx          # interactive (drawer + grants + a11y)
   use-cases.tsx                # 4 distinct use-case cards
   signals.tsx                  # social proof + testimonials
+  glossary.tsx                 # NEW: 8 interactive term cards
   pricing.tsx                  # 3-tier pricing + monthly/annual toggle
   faq.tsx                      # 8-question accordion
   changelog.tsx                # shipped + roadmap timeline
   final-cta.tsx                # closing CTA + animated counters + magnetic CTA
-  footer.tsx                   # footer
+  footer.tsx                   # footer (+ glossary link)
 public/favicon.svg             # hexagon MemoryOS mark
 public/og.png                  # 1344×768 social preview image
 ```

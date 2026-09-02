@@ -17,6 +17,7 @@ import { Architecture } from "@/components/site/architecture";
 import { MemoryPassport } from "@/components/site/memory-passport";
 import { UseCases } from "@/components/site/use-cases";
 import { Signals } from "@/components/site/signals";
+import { Glossary } from "@/components/site/glossary";
 import { Pricing } from "@/components/site/pricing";
 import { FAQ } from "@/components/site/faq";
 import { Changelog } from "@/components/site/changelog";
@@ -60,6 +61,9 @@ export default function Home() {
         </LazySection>
         <LazySection id="signals-wrap" minHeight={400}>
           <Signals />
+        </LazySection>
+        <LazySection id="glossary-wrap" minHeight={500}>
+          <Glossary />
         </LazySection>
         <LazySection id="pricing-wrap" minHeight={500}>
           <Pricing />

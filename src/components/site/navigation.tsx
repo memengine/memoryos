@@ -24,6 +24,7 @@ const SECTION_IDS = [
   "passport",
   "use-cases",
   "signals",
+  "glossary",
   "pricing",
   "faq",
   "changelog",
@@ -71,6 +72,7 @@ const NAV = [
     label: "Resources",
     items: [
       { label: "Docs", desc: "Quickstart, concepts, API", href: "#developers" },
+      { label: "Glossary", desc: "Vocabulary of governed memory", href: "#glossary" },
       { label: "Pricing", desc: "Developer · Team · Enterprise", href: "#pricing" },
       { label: "Signals", desc: "What teams say", href: "#signals" },
       { label: "Changelog", desc: "Shipped + roadmap", href: "#changelog" },

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionLabel, SectionHeading } from "./problem";
+import { SectionNumber } from "./section-number";
 import { publishMemory, type ExtractedMemoryEvent } from "@/hooks/use-extracted-memory";
 
 /**
@@ -242,6 +243,7 @@ export function LiveDemo() {
 
   return (
     <section id="demo" className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden">
+      <SectionNumber n="03" label="live demo" className="top-24" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-20 left-1/2 -translate-x-1/2 h-[400px] w-[700px] rounded-full bg-mem/8 blur-[140px]" />
       </div>

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { X, Check, ArrowDown, AlertTriangle } from "lucide-react";
+import { SectionNumber } from "./section-number";
 
 /**
  * Problem section
@@ -12,6 +13,7 @@ import { X, Check, ArrowDown, AlertTriangle } from "lucide-react";
 export function Problem() {
   return (
     <section id="problem" className="relative py-20 lg:py-28 border-t border-hairline">
+      <SectionNumber n="01" label="the problem" className="top-24" />
       <div className="container-page">
         <SectionLabel>The memory problem</SectionLabel>
         <SectionHeading>
