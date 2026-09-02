@@ -9,6 +9,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { SectionLabel, SectionHeading } from "./problem";
+import { SectionNumber } from "./section-number";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -53,6 +54,7 @@ export function FAQ() {
       id="faq"
       className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden"
     >
+      <SectionNumber n="13" label="faq" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute bottom-0 right-1/4 h-[320px] w-[480px] rounded-full bg-violet/8 blur-[130px]" />
       </div>

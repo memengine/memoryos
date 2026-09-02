@@ -9,7 +9,7 @@ import * as React from "react";
  */
 export function SectionNumber({
   n,
-  total = 19,
+  total = 20,
   label,
   className,
 }: {

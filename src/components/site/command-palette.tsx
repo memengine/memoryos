@@ -170,6 +170,10 @@ export function CommandPalette() {
               <BookOpen className="h-4 w-4 text-ink-mute" />
               <span>Documentation</span>
             </CommandItem>
+            <CommandItem onSelect={() => go("#metrics")} className="gap-2.5">
+              <Activity className="h-4 w-4 text-ink-mute" />
+              <span>Metrics · production at a glance</span>
+            </CommandItem>
             <CommandItem onSelect={() => go("#glossary")} className="gap-2.5">
               <BookOpen className="h-4 w-4 text-ink-mute" />
               <span>Glossary · vocabulary of governed memory</span>

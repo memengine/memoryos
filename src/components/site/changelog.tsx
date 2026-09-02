@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { GitCommit, Rocket, Sparkles, Calendar } from "lucide-react";
 import { SectionLabel, SectionHeading } from "./problem";
+import { SectionNumber } from "./section-number";
 
 /**
  * Changelog / Roadmap — product momentum signals.
@@ -67,6 +68,7 @@ export function Changelog() {
       id="changelog"
       className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden"
     >
+      <SectionNumber n="14" label="changelog" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/3 right-0 h-[360px] w-[480px] rounded-full bg-violet/8 blur-[140px]" />
       </div>

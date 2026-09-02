@@ -3,6 +3,7 @@
 import * as React from "react";
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 import { SectionLabel, SectionHeading } from "./problem";
+import { SectionNumber } from "./section-number";
 
 /**
  * How it works — the 5-stage MemoryOS pipeline.
@@ -76,6 +77,7 @@ export function HowItWorks() {
       ref={ref}
       className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden"
     >
+      <SectionNumber n="02" label="how it works" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-grid opacity-[0.4] mask-fade-b" />
       </div>
