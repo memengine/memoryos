@@ -250,6 +250,18 @@
     .container-page { padding-inline: 2rem; }
   }
 
+  /* Theme-aware SVG card fills — used in hero MemoryGraph + Architecture diagrams.
+     These adapt to dark/light mode via CSS variables, replacing hardcoded
+     #16181D / #0F1115 hex colors. */
+  .svg-card-fill { fill: var(--surface); }
+  .svg-card-stroke { stroke: var(--hairline-strong); }
+  .svg-chip-fill { fill: var(--surface-2); }
+  .svg-text-primary { fill: var(--ink); }
+  .svg-text-secondary { fill: var(--ink-mute); }
+  .svg-textbackdrop-fill { fill: var(--background); }
+  .svg-flowline { stroke: var(--hairline-strong); }
+  .svg-flowline-mem { stroke: var(--mem); }
+
   /* Hairline grid background — used in hero & product */
   .bg-grid {
     background-image:

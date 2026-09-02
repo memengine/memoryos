@@ -232,14 +232,14 @@ function GraphSvg() {
             width="150"
             height="64"
             rx="10"
-            fill="#16181D"
-            stroke="rgba(255,255,255,0.10)"
+            className="svg-card-fill"
+            stroke="var(--hairline-strong)"
           />
           <circle cx="22" cy="32" r="9" fill={a.color} opacity="0.85" />
-          <text x="44" y="26" fill="#E6E8EC" fontSize="13" fontWeight="600" fontFamily="ui-sans-serif">
+          <text x="44" y="26" className="svg-text-primary" fontSize="13" fontWeight="600" fontFamily="ui-sans-serif">
             {a.label}
           </text>
-          <text x="44" y="44" fill="#8A8F98" fontSize="10.5" fontFamily="ui-monospace">
+          <text x="44" y="44" className="svg-text-secondary" fontSize="10.5" fontFamily="ui-monospace">
             agent · tenant-A
           </text>
           <rect x="120" y="12" width="22" height="8" rx="4" fill={a.color} opacity="0.25">
@@ -288,7 +288,7 @@ function GraphSvg() {
           r="78"
           fill="url(#mem-grad)"
           opacity="0.07"
-          stroke="#9EFF7A"
+          stroke="var(--mem)"
           strokeOpacity="0.25"
           strokeWidth="1"
           className="animate-mem-orbit-slow"
@@ -298,13 +298,13 @@ function GraphSvg() {
           cx="120"
           cy="80"
           r="58"
-          fill="url(#ink-grad)"
-          stroke="rgba(255,255,255,0.18)"
+          fill="var(--background)"
+          stroke="var(--hairline-strong)"
         />
         {/* hexagon core */}
         <g
           transform="translate(120 80) rotate(0)"
-          stroke="#B6FF8C"
+          stroke="var(--mem)"
           strokeWidth="1.4"
           fill="none"
           strokeLinejoin="round"
@@ -322,12 +322,12 @@ function GraphSvg() {
           </polygon>
         </g>
         {/* text backdrop */}
-        <rect x="78" y="62" width="84" height="36" rx="10" fill="#0A0B0D" opacity="0.55" />
+        <rect x="78" y="62" width="84" height="36" rx="10" className="svg-textbackdrop-fill" opacity="0.85" />
         <text
           x="120"
           y="74"
           textAnchor="middle"
-          fill="#F4F6F8"
+          className="svg-text-primary"
           fontSize="13"
           fontWeight="700"
           fontFamily="ui-sans-serif"
@@ -338,7 +338,7 @@ function GraphSvg() {
           x="120"
           y="89"
           textAnchor="middle"
-          fill="#9EFF7A"
+          className="svg-flowline-mem"
           fontSize="8.5"
           fontFamily="ui-monospace"
           letterSpacing="0.06em"
@@ -365,8 +365,8 @@ function GraphSvg() {
             width="88"
             height="18"
             rx="9"
-            fill="#0F1115"
-            stroke="#9EFF7A"
+            className="svg-chip-fill"
+            stroke="var(--mem)"
             strokeWidth="1"
           >
             <animate
@@ -388,7 +388,7 @@ function GraphSvg() {
             x="0"
             y="4"
             textAnchor="middle"
-            fill="#9EFF7A"
+            className="svg-flowline-mem"
             fontSize="9.5"
             fontFamily="ui-monospace"
           >
@@ -401,7 +401,7 @@ function GraphSvg() {
             />
             {p.label}
           </text>
-          <circle cx="-44" cy="0" r="2.2" fill="#9EFF7A">
+          <circle cx="-44" cy="0" r="2.2" fill="var(--mem)">
             <animate
               attributeName="opacity"
               values={`0.2;1;0.2;0.2`}
