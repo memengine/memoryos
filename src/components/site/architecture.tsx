@@ -197,8 +197,8 @@ function ArchFlow() {
       </g>
 
       {/* existing systems (bottom-left, muted) */}
-      <g transform="translate(20, 250)">
-        <text x={0} y={-6} fill="#8A8F98" fontSize="9.5" fontFamily="ui-monospace" letterSpacing="0.1em">
+      <g transform="translate(20, 256)">
+        <text x={0} y={-10} className="svg-text-secondary" fontSize="9.5" fontFamily="ui-monospace" letterSpacing="0.1em">
           EXISTING SYSTEMS (untouched)
         </text>
         <ArchBoxMini x={0} y={4} label="App DB" icon="db" />
@@ -217,8 +217,8 @@ function ArchFlow() {
           width="300"
           height="240"
           rx="12"
-          fill="#0F1115"
-          stroke="#9EFF7A"
+          className="svg-card-fill"
+          stroke="var(--mem)"
           strokeOpacity="0.5"
           strokeWidth="1.2"
         />
@@ -227,11 +227,11 @@ function ArchFlow() {
 
         {/* header */}
         <g transform="translate(150, 24)">
-          <circle cx="0" cy="0" r="6" fill="#9EFF7A" />
-          <text x="0" y="22" textAnchor="middle" fill="#F4F6F8" fontSize="14" fontWeight="700" fontFamily="ui-sans-serif">
+          <circle cx="0" cy="0" r="6" className="svg-flowline-mem" />
+          <text x="0" y="22" textAnchor="middle" className="svg-text-primary" fontSize="14" fontWeight="700" fontFamily="ui-sans-serif">
             MemoryOS
           </text>
-          <text x="0" y="37" textAnchor="middle" fill="#9EFF7A" fontSize="9" fontFamily="ui-monospace" letterSpacing="0.08em">
+          <text x="0" y="37" textAnchor="middle" className="svg-flowline-mem" fontSize="9" fontFamily="ui-monospace" letterSpacing="0.08em">
             GOVERN LAYER
           </text>
         </g>
@@ -242,9 +242,9 @@ function ArchFlow() {
           const y = 90 + Math.floor(i / 3) * 40;
           return (
             <g key={s} transform={`translate(${x}, ${y})`}>
-              <rect width="80" height="28" rx="6" fill="#16181D" stroke="#9EFF7A" strokeOpacity="0.3" />
-              <circle cx="12" cy="14" r="3" fill="#9EFF7A" />
-              <text x="44" y="18" textAnchor="middle" fill="#E6E8EC" fontSize="10" fontFamily="ui-monospace">
+              <rect width="80" height="28" rx="6" className="svg-chip-fill" stroke="var(--mem)" strokeOpacity="0.3" />
+              <circle cx="12" cy="14" r="3" className="svg-flowline-mem" />
+              <text x="44" y="18" textAnchor="middle" className="svg-text-primary" fontSize="10" fontFamily="ui-monospace">
                 {s}
               </text>
             </g>
@@ -252,7 +252,7 @@ function ArchFlow() {
         })}
 
         {/* footer note */}
-        <text x="150" y="222" textAnchor="middle" fill="#8A8F98" fontSize="8.5" fontFamily="ui-monospace">
+        <text x="150" y="222" textAnchor="middle" className="svg-text-secondary" fontSize="8.5" fontFamily="ui-monospace">
           quality · provenance · tenant · consent
         </text>
       </g>
@@ -267,7 +267,7 @@ function ArchFlow() {
       >
         <animate attributeName="stroke-dashoffset" values="0;-36" dur="1.4s" repeatCount="indefinite" />
       </path>
-      <text x="220" y="196" fill="#9EFF7A" fontSize="9" fontFamily="ui-monospace">add()</text>
+      <text x="220" y="196" className="svg-flowline-mem" fontSize="9" fontFamily="ui-monospace">add()</text>
 
       {/* flow arrows: MemoryOS → model */}
       <path
@@ -279,7 +279,7 @@ function ArchFlow() {
       >
         <animate attributeName="stroke-dashoffset" values="0;-36" dur="1.4s" repeatCount="indefinite" />
       </path>
-      <text x="720" y="196" fill="#9EFF7A" fontSize="9" fontFamily="ui-monospace">get() → ctx</text>
+      <text x="720" y="196" className="svg-flowline-mem" fontSize="9" fontFamily="ui-monospace">get() → ctx</text>
 
       {/* Right: Model → Response → User */}
       <g transform="translate(840, 40)">
@@ -293,12 +293,13 @@ function ArchFlow() {
       {/* loop-back arrow (response → agent learns) */}
       <path
         d="M900 28 C 940 380, 60 380, 60 240"
-        stroke="rgba(255,255,255,0.08)"
+        className="svg-flowline"
         strokeWidth="1"
+        strokeOpacity="0.5"
         fill="none"
         strokeDasharray="2 6"
       />
-      <text x="500" y="372" textAnchor="middle" fill="#5A5E66" fontSize="8.5" fontFamily="ui-monospace">
+      <text x="500" y="372" textAnchor="middle" className="svg-text-secondary" fontSize="8.5" fontFamily="ui-monospace">
         agent learns · next call carries governed context
       </text>
     </svg>
@@ -324,12 +325,12 @@ function ArchBox({
 }) {
   return (
     <g transform={`translate(${x}, ${y})`}>
-      <rect width={w} height={h} rx="8" fill="#16181D" stroke={`${color}40`} />
+      <rect width={w} height={h} rx="8" className="svg-card-fill" stroke={`${color}40`} />
       <circle cx="14" cy={h / 2} r="4" fill={color} opacity="0.8" />
-      <text x="28" y={h / 2 - 2} fill="#E6E8EC" fontSize="11" fontWeight="600" fontFamily="ui-sans-serif">
+      <text x="28" y={h / 2 - 2} className="svg-text-primary" fontSize="11" fontWeight="600" fontFamily="ui-sans-serif">
         {label}
       </text>
-      <text x="28" y={h / 2 + 11} fill="#8A8F98" fontSize="8.5" fontFamily="ui-monospace">
+      <text x="28" y={h / 2 + 11} className="svg-text-secondary" fontSize="8.5" fontFamily="ui-monospace">
         {sub}
       </text>
     </g>
@@ -349,9 +350,9 @@ function ArchBoxMini({
 }) {
   return (
     <g transform={`translate(${x}, ${y})`}>
-      <rect width="78" height="28" rx="6" fill="#16181D" stroke="rgba(255,255,255,0.08)" />
-      <circle cx="12" cy="14" r="3" fill="#5A5E66" />
-      <text x="44" y="18" textAnchor="middle" fill="#8A8F98" fontSize="9.5" fontFamily="ui-monospace">
+      <rect width="78" height="28" rx="6" className="svg-chip-fill" stroke="var(--hairline-strong)" />
+      <circle cx="12" cy="14" r="3" className="svg-text-secondary" />
+      <text x="44" y="18" textAnchor="middle" className="svg-text-secondary" fontSize="9.5" fontFamily="ui-monospace">
         {label}
       </text>
     </g>
@@ -376,15 +377,17 @@ function FlowArrow({
         y1={y1}
         x2={x2}
         y2={y2}
-        stroke="rgba(255,255,255,0.18)"
+        className="svg-flowline"
         strokeWidth="1"
+        strokeOpacity="0.6"
         strokeDasharray="3 4"
       >
         <animate attributeName="stroke-dashoffset" values="0;-14" dur="1.4s" repeatCount="indefinite" />
       </line>
       <polygon
         points={`${x2 - 3},${y2 - 5} ${x2 + 3},${y2 - 5} ${x2},${y2}`}
-        fill="rgba(255,255,255,0.3)"
+        className="svg-flowline"
+        opacity="0.6"
       />
     </g>
   );

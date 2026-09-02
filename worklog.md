@@ -58,9 +58,70 @@ posture (SOC 2, encryption, isolation, auditability, residency).
 - VLM hero rating: 8/10 (held — "visually striking, technically
   sophisticated, effective dark-mode aesthetic").
 
+## Round 11 (user request) — Dev server restart + Light mode SVG fixes
+
+### Issue: "why ui not shown"
+- User reported the preview showing "No content".
+- Root cause: the **dev server had stopped running** (process died, no
+  `next dev` in `ps`, curl returned HTTP 000). Not a code issue.
+- Fix: restarted `bun run dev` in the background. Server came back in 1.3s.
+- Verified: page loads HTTP 200, title + nav + hero content all render,
+  0 console errors.
+
+### Light mode SVG fixes (continuing from Round 10)
+User uploaded two screenshots showing dark SVG cards on white background
+in light mode. The hero MemoryGraph and Architecture diagram used hardcoded
+dark hex colors (`#16181D`, `#0F1115`, `#E6E8EC`, `#8A8F98`, `#F4F6F8`,
+`#0A0B0D`, `rgba(255,255,255,...)`) that didn't adapt to light mode.
+
+1. **`globals.css`** — added 8 theme-aware SVG utility classes:
+   `.svg-card-fill` (var(--surface)), `.svg-card-stroke` (var(--hairline-strong)),
+   `.svg-chip-fill` (var(--surface-2)), `.svg-text-primary` (var(--ink)),
+   `.svg-text-secondary` (var(--ink-mute)), `.svg-textbackdrop-fill`
+   (var(--background)), `.svg-flowline` (var(--hairline-strong)),
+   `.svg-flowline-mem` (var(--mem)). These work in SVG `fill`/`stroke`
+   via CSS classes, adapting to dark/light automatically.
+
+2. **`hero.tsx` MemoryGraph SVG** — replaced all hardcoded hex colors:
+   - Agent cards (Support/Copilot/Tutor): fill → `.svg-card-fill`,
+     stroke → `var(--hairline-strong)`, text → `.svg-text-primary`/secondary.
+   - Core circle: inner ring fill → `var(--background)`, stroke →
+     `var(--hairline-strong)`, hexagon stroke → `var(--mem)`, text backdrop
+     → `.svg-textbackdrop-fill`, labels → `.svg-text-primary`/flowline-mem.
+   - Pipeline chips (01–05): fill → `.svg-chip-fill`, stroke/text/dots →
+     `var(--mem)` (via `.svg-flowline-mem`).
+   - Flow line (core→model): stroke → `.svg-flowline-mem`.
+   - Model card: same treatment as agent cards.
+   - Returning arrow + orbiting nodes: → `.svg-flowline` / `.svg-flowline-mem`.
+
+3. **`architecture.tsx` ArchFlow SVG** — replaced all hardcoded hex colors:
+   - MemoryOS center box: fill → `.svg-card-fill`, stroke → `var(--mem)`.
+   - Stage chips (ingest/extract/...): fill → `.svg-chip-fill`,
+     stroke/dots → `var(--mem)`, text → `.svg-text-primary`.
+   - ArchBox (User/App/Agent/Model): fill → `.svg-card-fill`,
+     text → `.svg-text-primary`/secondary.
+   - ArchBoxMini (App DB/Transcripts/Vector/Tools): fill → `.svg-chip-fill`,
+     stroke → `var(--hairline-strong)`, text → `.svg-text-secondary`.
+   - FlowArrow lines + arrowheads: → `.svg-flowline` (opacity 0.6).
+   - Loop-back arrow + bottom caption: → `.svg-flowline` / secondary.
+   - add()/get() labels: → `.svg-flowline-mem`.
+   - **Fixed the "EXISTING SYSTEMS" text overlap**: moved the label
+     `y` from -6 to -10 and the group `translate` y from 250 to 256 so it
+     no longer collides with the Agent box above.
+
+### Verification (light mode)
+- VLM confirmed hero cards now use **white backgrounds with dark text**
+  (Support/Copilot/Tutor, MemoryOS core, pipeline chips, Model card).
+- VLM confirmed Architecture boxes use **light backgrounds with dark text**,
+  connection lines are **visible** (no longer invisible), and **no text
+  overlap** in the EXISTING SYSTEMS area.
+- Dark mode still works: VLM confirmed dark backgrounds + light text +
+  vibrant green accents, everything readable.
+- `bun run lint`: clean.
+
 ## Round 10 — Unresolved / Risks + Next-Phase Recommendations
-- **Light mode polish** — a few inline SVG hex colors in Architecture
-  (`#0F1115`, `#16181D`) remain hardcoded; low priority.
+- **Light mode SVG polish** — ✅ DONE in Round 11 (hero + architecture
+  SVGs now use theme-aware CSS variable classes).
 - **Glossary keyboard nav** — arrow-key navigation between cards could be
   added (cards are buttons so already keyboard-accessible).
 - **Metrics live data** — sparkline is a random walk; could be wired to

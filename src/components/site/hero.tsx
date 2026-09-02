@@ -424,7 +424,7 @@ function GraphSvg() {
       {/* Flow lines: core -> model (right) */}
       <path
         d="M680 230 C 780 230, 820 230, 880 230"
-        stroke="#9EFF7A"
+        className="svg-flowline-mem"
         strokeWidth="1.6"
         strokeOpacity="0.7"
         fill="none"
@@ -446,18 +446,18 @@ function GraphSvg() {
           width="150"
           height="64"
           rx="10"
-          fill="#16181D"
-          stroke="rgba(255,255,255,0.10)"
+          className="svg-card-fill"
+          stroke="var(--hairline-strong)"
         />
-        <circle cx="22" cy="32" r="9" fill="#fff" opacity="0.8" />
-        <text x="44" y="26" fill="#E6E8EC" fontSize="13" fontWeight="600" fontFamily="ui-sans-serif">
+        <circle cx="22" cy="32" r="9" className="svg-text-primary" opacity="0.8" />
+        <text x="44" y="26" className="svg-text-primary" fontSize="13" fontWeight="600" fontFamily="ui-sans-serif">
           Model
         </text>
-        <text x="44" y="44" fill="#8A8F98" fontSize="10" fontFamily="ui-monospace">
+        <text x="44" y="44" className="svg-text-secondary" fontSize="10" fontFamily="ui-monospace">
           prompt + ctx
         </text>
-        <rect x="118" y="20" width="22" height="22" rx="6" fill="#9EFF7A" opacity="0.18" />
-        <text x="129" y="34" textAnchor="middle" fill="#9EFF7A" fontSize="11" fontWeight="700">
+        <rect x="118" y="20" width="22" height="22" rx="6" className="svg-flowline-mem" opacity="0.18" />
+        <text x="129" y="34" textAnchor="middle" className="svg-flowline-mem" fontSize="11" fontWeight="700">
           ✓
         </text>
       </g>
@@ -465,8 +465,9 @@ function GraphSvg() {
       {/* Returning arrow back to agents (subtle) */}
       <path
         d="M885 230 C 885 380, 60 380, 60 70"
-        stroke="rgba(255,255,255,0.10)"
+        className="svg-flowline"
         strokeWidth="1"
+        strokeOpacity="0.5"
         fill="none"
         strokeDasharray="2 6"
       />
@@ -483,7 +484,7 @@ function GraphSvg() {
         const cx = 540 + n.r * Math.cos((n.angle * Math.PI) / 180);
         const cy = 230 + n.r * Math.sin((n.angle * Math.PI) / 180);
         return (
-          <circle key={i} cx={cx} cy={cy} r="2.5" fill="#9EFF7A" opacity="0.7">
+          <circle key={i} cx={cx} cy={cy} r="2.5" className="svg-flowline-mem" opacity="0.7">
             <animate
               attributeName="opacity"
               values="0.2;0.95;0.2"
