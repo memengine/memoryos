@@ -347,14 +347,17 @@ function GraphSvg() {
         </text>
       </g>
 
-      {/* Pipeline stage ticks around core */}
+      {/* Pipeline stage ticks around core — sequential activation wave */}
       {[
         { label: "01 Ingest", x: 510, y: 110 },
         { label: "02 Extract", x: 590, y: 175 },
         { label: "03 Reconcile", x: 560, y: 250 },
         { label: "04 Govern", x: 460, y: 250 },
         { label: "05 Retrieve", x: 410, y: 175 },
-      ].map((p, i) => (
+      ].map((p, i) => {
+        const cycleDur = 5; // seconds per full cycle
+        const stageStart = i * 0.7; // staggered activation
+        return (
         <g key={p.label} transform={`translate(${p.x}, ${p.y})`}>
           <rect
             x="-44"
@@ -363,8 +366,24 @@ function GraphSvg() {
             height="18"
             rx="9"
             fill="#0F1115"
-            stroke="rgba(255,255,255,0.08)"
-          />
+            stroke="#9EFF7A"
+            strokeWidth="1"
+          >
+            <animate
+              attributeName="stroke-opacity"
+              values={`0.15;0.7;0.15;0.15`}
+              keyTimes={`0;${stageStart / cycleDur};${(stageStart + 0.6) / cycleDur};1`}
+              dur={`${cycleDur}s`}
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="fill-opacity"
+              values={`1;1;0.4;1`}
+              keyTimes={`0;${stageStart / cycleDur};${(stageStart + 0.3) / cycleDur};1`}
+              dur={`${cycleDur}s`}
+              repeatCount="indefinite"
+            />
+          </rect>
           <text
             x="0"
             y="4"
@@ -372,21 +391,35 @@ function GraphSvg() {
             fill="#9EFF7A"
             fontSize="9.5"
             fontFamily="ui-monospace"
-            opacity={0.9}
           >
+            <animate
+              attributeName="opacity"
+              values={`0.45;1;0.45;0.45`}
+              keyTimes={`0;${stageStart / cycleDur};${(stageStart + 0.6) / cycleDur};1`}
+              dur={`${cycleDur}s`}
+              repeatCount="indefinite"
+            />
             {p.label}
           </text>
           <circle cx="-44" cy="0" r="2.2" fill="#9EFF7A">
             <animate
               attributeName="opacity"
-              values="0.2;1;0.2"
-              dur="2.4s"
-              begin={`${i * 0.3}s`}
+              values={`0.2;1;0.2;0.2`}
+              keyTimes={`0;${stageStart / cycleDur};${(stageStart + 0.5) / cycleDur};1`}
+              dur={`${cycleDur}s`}
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="r"
+              values={`2.2;3.2;2.2;2.2`}
+              keyTimes={`0;${stageStart / cycleDur};${(stageStart + 0.4) / cycleDur};1`}
+              dur={`${cycleDur}s`}
               repeatCount="indefinite"
             />
           </circle>
         </g>
-      ))}
+        );
+      })}
 
       {/* Flow lines: core -> model (right) */}
       <path

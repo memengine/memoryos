@@ -11,6 +11,7 @@ const COLS = [
       { label: "How it works", href: "#how" },
       { label: "Production controls", href: "#production" },
       { label: "Memory Passport", href: "#passport" },
+      { label: "Pricing", href: "#pricing" },
     ],
   },
   {
@@ -32,6 +33,7 @@ const COLS = [
       { label: "TypeScript SDK", href: "#developers" },
       { label: "REST API", href: "#developers" },
       { label: "MCP Server", href: "#developers" },
+      { label: "FAQ", href: "#faq" },
     ],
   },
   {

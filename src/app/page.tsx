@@ -1,6 +1,7 @@
 import { Navigation } from "@/components/site/navigation";
 import { ScrollProgress } from "@/components/site/scroll-progress";
 import { BackToTop } from "@/components/site/back-to-top";
+import { CommandPalette } from "@/components/site/command-palette";
 import { Hero } from "@/components/site/hero";
 import { Traction } from "@/components/site/traction";
 import { Problem } from "@/components/site/problem";
@@ -14,6 +15,8 @@ import { Onboarding } from "@/components/site/onboarding";
 import { Production } from "@/components/site/production";
 import { MemoryPassport } from "@/components/site/memory-passport";
 import { UseCases } from "@/components/site/use-cases";
+import { Pricing } from "@/components/site/pricing";
+import { FAQ } from "@/components/site/faq";
 import { FinalCTA } from "@/components/site/final-cta";
 import { Footer } from "@/components/site/footer";
 
@@ -22,6 +25,7 @@ export default function Home() {
     <>
       <ScrollProgress />
       <Navigation />
+      <CommandPalette />
       <main className="flex-1">
         <Hero />
         <Traction />
@@ -36,6 +40,8 @@ export default function Home() {
         <Production />
         <MemoryPassport />
         <UseCases />
+        <Pricing />
+        <FAQ />
         <FinalCTA />
       </main>
       <Footer />
