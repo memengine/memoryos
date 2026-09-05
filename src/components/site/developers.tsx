@@ -11,7 +11,7 @@ type Lang = "python" | "typescript" | "rest" | "mcp";
 
 const TABS: { id: Lang; label: string; sub: string }[] = [
   { id: "python", label: "Python", sub: "pip install memoryo-sdk" },
-  { id: "typescript", label: "TypeScript", sub: "npm i @memoryos/sdk" },
+  { id: "typescript", label: "TypeScript", sub: "npm install memoryo-sdk" },
   { id: "rest", label: "REST API", sub: "stateless HTTP" },
   { id: "mcp", label: "MCP Server", sub: "tools for MCP agents" },
 ];
@@ -41,16 +41,16 @@ result = client.get(
 prompt_addition = result.system_prompt_addition if result.has_context else ""`,
   },
   typescript: {
-    install: "$ npm i @memoryos/sdk",
-    code: `import { Memory } from "@memoryos/sdk";
+    install: "$ npm install memoryo-sdk",
+    code: `import { MemoryOS } from "memoryo-sdk";
 
-const client = new Memory({ apiKey: process.env.MEMORYOS_API_KEY });
+const client = new MemoryOS(process.env.MEMORYOS_API_KEY!);
 
 // Ingest a conversation signal
-const write = await client.add({
-  messages: [{ role: "user", content: "I prefer concise answers." }],
-  externalUserId: "customer-123",
-});
+const write = await client.add(
+  [{ role: "user", content: "I prefer concise answers." }],
+  "customer-123",
+);
 if (write.jobId) await client.waitForJob(write.jobId);
 
 // Retrieve governed context before the next model call
@@ -65,7 +65,7 @@ const promptAddition = result.hasContext ? result.systemPromptAddition : "";`,
     install: "$ curl https://api.memoryo.dev/v1/memories/add",
     code: `# Add a memory
 curl -X POST https://api.memoryo.dev/v1/memories/add \\
-  -H "Authorization: Bearer $MEMORYOS_API_KEY" \\
+  -H "Authorization: ApiKey $MEMORYOS_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
     "messages": [{"role":"user","content":"I prefer concise answers."}],
@@ -73,8 +73,8 @@ curl -X POST https://api.memoryo.dev/v1/memories/add \\
   }'
 
 # Retrieve governed context
-curl -X POST https://api.memoryo.dev/v1/memories/get \\
-  -H "Authorization: Bearer $MEMORYOS_API_KEY" \\
+curl -X POST https://api.memoryo.dev/v1/memories/retrieve \\
+  -H "Authorization: ApiKey $MEMORYOS_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
     "query": "How should I answer this user?",
@@ -82,14 +82,13 @@ curl -X POST https://api.memoryo.dev/v1/memories/get \\
   }'`,
   },
   mcp: {
-    install: "$ npx @memoryos/mcp-server --api-key $MEMORYOS_API_KEY",
+    install: "$ pip install memoryo-mcp",
     code: `// mcp.config.json — give your MCP-compatible agent
 // MemoryOS tools for governed memory operations.
 {
   "mcpServers": {
     "memoryos": {
-      "command": "npx",
-      "args": ["@memoryos/mcp-server"],
+      "command": "memoryo-mcp",
       "env": {
         "MEMORYOS_API_KEY": "\${MEMORYOS_API_KEY}"
       }
@@ -98,10 +97,9 @@ curl -X POST https://api.memoryo.dev/v1/memories/get \\
 }
 
 // Tools exposed:
-//   memoryos.add      — ingest a conversation signal
-//   memoryos.get      — retrieve governed context
-//   memoryos.resolve  — review a conflict
-//   memoryos.consent  — grant or revoke access`,
+//   memoryos_add_memory
+//   memoryos_get_context
+//   memoryos_get_job_status`,
   },
 };
 
@@ -171,7 +169,7 @@ export function Developers() {
                 variant="ghost"
                 className="h-10 px-4 rounded-lg border border-hairline hover:bg-white/[0.04] gap-1.5"
               >
-                <a href="#developers">Read the quickstart</a>
+                <a href="https://docs.memoryo.dev/quickstart">Read the quickstart</a>
               </Button>
             </div>
           </div>

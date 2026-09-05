@@ -4,6 +4,16 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { AnimatedCounter } from "./animated-counter";
 
+type Stat = {
+  value: number;
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+  label: string;
+  tag: string;
+  accent?: string;
+};
+
 /**
  * Traction — a compact proof strip placed right after the hero.
  * Communicates momentum + authority without faking customer logos.
@@ -60,12 +70,12 @@ export function Traction() {
   );
 }
 
-const STATS = [
+const STATS: readonly Stat[] = [
   { value: 5, suffix: "-stage", label: "Ingest → Retrieve pipeline", tag: "lifecycle", accent: "text-mem" },
   { value: 4, suffix: " SDKs", label: "Python · TS · REST · MCP", tag: "developer surface", accent: "text-mem" },
   { value: 6, suffix: " controls", label: "Quality, conflict, provenance, lifecycle, degradation, isolation", tag: "production gates", accent: "text-mem" },
   { value: 99.9, decimals: 1, suffix: "%", label: "Designed for SLA-grade AI workloads", tag: "tenant isolated", accent: "text-mem" },
-] as const;
+];
 
 const TOKENS = [
   "memory.add()",

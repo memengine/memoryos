@@ -4,145 +4,28 @@ import * as React from "react";
 import { useInView } from "framer-motion";
 
 /**
- * TypingTerminal — a CLI terminal that calls the REAL streaming extraction
- * endpoint and types out the actual trace as stages arrive over SSE.
- *
- * When scrolled into view, it POSTs a sample input to /api/memory/extract-stream,
- * consumes the SSE stream, and types each stage's detail as it arrives.
- * After completion, it pauses and re-runs with the next sample. This is
- * genuinely "live" — the trace comes from the real LLM, not a canned script.
+ * Zero-cost pipeline preview. The protected, user-triggered live demo will be
+ * connected separately; this visual must never generate API traffic on scroll.
  */
-
-const SAMPLE_INPUTS = [
-  "I prefer concise explanations while debugging.",
-  "We're building a B2B SaaS for Indian SMBs using FastAPI and Postgres.",
-  "Actually, switch me to TypeScript — not Python anymore.",
-  "My goal this quarter is to ship the onboarding flow end-to-end.",
-];
-
-type Line = { p: string; t: string; cls: string };
+const PREVIEW_LINES = [
+  { p: "$", t: 'client.add("I prefer concise explanations.")', cls: "text-ink-soft" },
+  { p: "→", t: "ingest · signal accepted and scoped", cls: "text-ink-mute" },
+  { p: "✓", t: "extract · durable preference candidate", cls: "text-mem" },
+  { p: "→", t: "reconcile · current state evaluated", cls: "text-ink-mute" },
+  { p: "→", t: "govern · quality and provenance checks", cls: "text-ink-mute" },
+  { p: "✓", t: "retrieve · ranked, prompt-ready context", cls: "text-mem" },
+] as const;
 
 export function TypingTerminal() {
   const ref = React.useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: false, margin: "-80px" });
-  const [lines, setLines] = React.useState<Line[]>([]);
-  const [typed, setTyped] = React.useState("");
-  const [activeLine, setActiveLine] = React.useState<Line | null>(null);
-  const [sampleIdx, setSampleIdx] = React.useState(0);
-  const [running, setRunning] = React.useState(false);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [visibleCount, setVisibleCount] = React.useState(0);
 
-  // Drive a single extraction cycle: call the SSE endpoint, type lines as
-  // stages arrive, then pause before the next cycle.
   React.useEffect(() => {
-    if (!inView || running) return;
-    let cancelled = false;
-    setRunning(true);
-
-    async function runCycle() {
-      const input = SAMPLE_INPUTS[sampleIdx % SAMPLE_INPUTS.length];
-      const collected: Line[] = [
-        { p: "$", t: `client.add(${JSON.stringify(input.slice(0, 50))}…)`, cls: "text-ink-soft" },
-      ];
-      setLines(collected);
-      setTyped("");
-      setActiveLine(null);
-
-      try {
-        const res = await fetch("/api/memory/extract-stream", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ input }),
-        });
-        if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (!cancelled) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const events = buffer.split("\n\n");
-          buffer = events.pop() ?? "";
-
-          for (const evt of events) {
-            if (cancelled) break;
-            const line = evt.trim();
-            if (!line.startsWith("data: ")) continue;
-            let data: any;
-            try {
-              data = JSON.parse(line.slice(6));
-            } catch {
-              continue;
-            }
-            if (data.type === "stage") {
-              const newLine: Line = {
-                p: data.stage === "extract" ? "✓" : "→",
-                t: `${data.stage} · ${data.detail}`,
-                cls:
-                  data.stage === "extract" || data.stage === "retrieve"
-                    ? "text-mem"
-                    : data.stage === "reconcile" && data.detail.includes("conflict")
-                    ? "text-amber"
-                    : "text-ink-mute",
-              };
-              // Type out this line character by character
-              await typeLine(newLine, () => cancelled);
-              collected.push(newLine);
-              setLines([...collected]);
-              setTyped("");
-              setActiveLine(null);
-            } else if (data.type === "result") {
-              const resultLine: Line = {
-                p: "✓",
-                t: `memory#${data.job_id} stored · ${data.latency_ms}ms · prompt-ready`,
-                cls: "text-mem",
-              };
-              await typeLine(resultLine, () => cancelled);
-              collected.push(resultLine);
-              setLines([...collected]);
-              setTyped("");
-              setActiveLine(null);
-            }
-          }
-        }
-      } catch {
-        if (!cancelled) {
-          const errLine: Line = {
-            p: "✗",
-            t: "extraction failed · retrying…",
-            cls: "text-rose",
-          };
-          await typeLine(errLine, () => cancelled);
-          collected.push(errLine);
-          setLines([...collected]);
-        }
-      }
-
-      if (cancelled) return;
-      // Pause before next cycle
-      await new Promise((r) => setTimeout(r, 2400));
-      if (cancelled) return;
-      setSampleIdx((i) => i + 1);
-      setRunning(false);
-    }
-
-    runCycle();
-    return () => {
-      cancelled = true;
-    };
-  }, [inView, sampleIdx]);
-
-  // Type a line character by character, with a blinking cursor.
-  async function typeLine(line: Line, isCancelled: () => boolean) {
-    setActiveLine(line);
-    for (let i = 0; i <= line.t.length; i++) {
-      if (isCancelled()) return;
-      setTyped(line.t.slice(0, i));
-      await new Promise((r) => setTimeout(r, 18 + Math.random() * 14));
-    }
-  }
+    if (!inView || visibleCount >= PREVIEW_LINES.length) return;
+    const timer = window.setTimeout(() => setVisibleCount((count) => count + 1), 260);
+    return () => clearTimeout(timer);
+  }, [inView, visibleCount]);
 
   return (
     <div
@@ -155,42 +38,26 @@ export function TypingTerminal() {
           <span className="h-2 w-2 rounded-full bg-white/15" />
           <span className="h-2 w-2 rounded-full bg-white/15" />
         </div>
-        <span className="text-[10.5px] font-mono text-ink-mute">
-          memoryos · live trace
-        </span>
-        <span className="inline-flex items-center gap-1.5 text-[10.5px] font-mono text-mem">
-          <span className="h-1.5 w-1.5 rounded-full bg-mem animate-mem-pulse" />
-          {running ? "streaming" : "live"}
+        <span className="text-[10.5px] font-mono text-ink-mute">memoryos · pipeline preview</span>
+        <span className="inline-flex items-center gap-1.5 text-[10.5px] font-mono text-ink-mute">
+          <span className="h-1.5 w-1.5 rounded-full bg-ink-mute" />
+          preview
         </span>
       </div>
       <div className="p-3.5 font-mono text-[12px] leading-[1.7] min-h-[280px]">
-        {lines.map((line, i) => {
-          const isActive = activeLine && i === lines.length - 1;
-          const text = isActive ? typed : line.t;
-          return (
-            <div key={i} className="flex gap-2">
-              <span
-                className={`shrink-0 w-3 ${
-                  line.p === "$"
-                    ? "text-mem"
-                    : line.p === "✓"
-                    ? "text-mem"
-                    : line.p === "✗"
-                    ? "text-rose"
-                    : "text-ink-mute"
-                }`}
-              >
-                {line.p}
-              </span>
-              <span className={line.cls}>
-                {text}
-                {isActive && (
-                  <span className="ml-0.5 inline-block h-3.5 w-1.5 bg-mem align-middle animate-mem-blink" />
-                )}
-              </span>
-            </div>
-          );
-        })}
+        {PREVIEW_LINES.slice(0, visibleCount).map((line, index) => (
+          <div key={line.t} className="flex gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300">
+            <span className={`shrink-0 w-3 ${line.p === "$" || line.p === "✓" ? "text-mem" : "text-ink-mute"}`}>
+              {line.p}
+            </span>
+            <span className={line.cls}>
+              {line.t}
+              {index === visibleCount - 1 && visibleCount < PREVIEW_LINES.length && (
+                <span className="ml-0.5 inline-block h-3.5 w-1.5 bg-mem align-middle animate-mem-blink" />
+              )}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

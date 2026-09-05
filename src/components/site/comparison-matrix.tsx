@@ -12,8 +12,15 @@ import { SectionLabel, SectionHeading } from "./problem";
  */
 
 type Cell = "yes" | "no" | "partial";
+type Column = {
+  id: "appdb" | "transcript" | "vector" | "memoryos";
+  name: string;
+  sub: string;
+  color: string;
+  highlight?: boolean;
+};
 
-const COLS = [
+const COLS: readonly Column[] = [
   { id: "appdb", name: "Application DB", sub: "records", color: "#8A8F98" },
   { id: "transcript", name: "Transcript Store", sub: "history", color: "#8A8F98" },
   { id: "vector", name: "Vector Search", sub: "retrieval", color: "#8A8F98" },
@@ -29,7 +36,8 @@ const ROWS: { group: string; label: string; cells: Record<string, Cell>; note?: 
   {
     group: "Storage",
     label: "Complete conversation history",
-    cells: { appdb: "partial", transcript: "yes", vector: "no", memoryos: "partial", note: "MemoryOS extracts durable state, not raw transcripts." },
+    cells: { appdb: "partial", transcript: "yes", vector: "no", memoryos: "partial" },
+    note: "MemoryOS extracts durable state, not raw transcripts.",
   },
   {
     group: "State",

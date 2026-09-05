@@ -57,7 +57,7 @@ const NAV = [
     label: "Developers",
     items: [
       { label: "Python SDK", desc: "pip install memoryo-sdk", href: "#developers" },
-      { label: "TypeScript SDK", desc: "npm i @memoryos/sdk", href: "#developers" },
+      { label: "TypeScript SDK", desc: "npm install memoryo-sdk", href: "#developers" },
       { label: "REST API", desc: "Stateless HTTP integration", href: "#developers" },
       { label: "MCP Server", desc: "Tools for MCP-compatible agents", href: "#developers" },
     ],
@@ -74,14 +74,14 @@ const NAV = [
   {
     label: "Resources",
     items: [
-      { label: "Docs", desc: "Quickstart, concepts, API", href: "#developers" },
+      { label: "Docs", desc: "Quickstart, concepts, API", href: "https://docs.memoryo.dev" },
       { label: "Metrics", desc: "Production at a glance", href: "#metrics" },
       { label: "Glossary", desc: "Vocabulary of governed memory", href: "#glossary" },
       { label: "Pricing", desc: "Developer · Team · Enterprise", href: "#pricing" },
       { label: "Signals", desc: "What teams say", href: "#signals" },
       { label: "Changelog", desc: "Shipped + roadmap", href: "#changelog" },
       { label: "FAQ", desc: "Questions before shipping", href: "#faq" },
-      { label: "Contact", desc: "Talk to us about onboarding", href: "#cta" },
+      { label: "Contact", desc: "Talk to us about onboarding", href: "https://docs.memoryo.dev/contact" },
     ],
   },
 ];
@@ -211,7 +211,7 @@ export function Navigation() {
             size="sm"
             className="text-ink-soft hover:text-ink hover:bg-white/[0.04]"
           >
-            <a href="#developers" className="gap-1.5">
+            <a href="https://docs.memoryo.dev" className="gap-1.5">
               <BookOpen className="h-3.5 w-3.5" />
               Docs
             </a>
@@ -221,7 +221,7 @@ export function Navigation() {
             size="sm"
             className="bg-mem text-[#0A0B0D] hover:bg-mem/90 font-semibold h-9 px-4 rounded-lg shadow-[0_0_0_1px_oklch(0.92_0.17_145_/_30%),0_8px_24px_-12px_oklch(0.92_0.17_145_/_60%)]"
           >
-            <a href="#cta" className="gap-1.5">
+            <a href="https://app.memoryo.dev/sign-up?redirect=%2F" className="gap-1.5">
               Try MemoryOS
               <ArrowRight className="h-3.5 w-3.5" />
             </a>
@@ -306,7 +306,7 @@ export function Navigation() {
                   variant="ghost"
                   className="justify-start gap-2 h-11"
                 >
-                  <a href="#developers">
+                  <a href="https://docs.memoryo.dev">
                     <BookOpen className="h-4 w-4" /> Read the docs
                   </a>
                 </Button>
@@ -314,7 +314,7 @@ export function Navigation() {
                   asChild
                   className="bg-mem text-[#0A0B0D] hover:bg-mem/90 font-semibold h-11 gap-2"
                 >
-                  <a href="#cta">
+                  <a href="https://app.memoryo.dev/sign-up?redirect=%2F">
                     Try MemoryOS <ArrowRight className="h-4 w-4" />
                   </a>
                 </Button>

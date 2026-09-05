@@ -50,9 +50,7 @@ export function Metrics() {
 
 function OpsPanel() {
   // Generate a live-ish sparkline that ticks every 1.2s
-  const [points, setPoints] = React.useState<number[]>(() =>
-    Array.from({ length: 40 }, () => 30 + Math.random() * 50)
-  );
+  const [points, setPoints] = React.useState<number[]>(INITIAL_POINTS);
 
   React.useEffect(() => {
     const id = setInterval(() => {
@@ -173,6 +171,12 @@ function OpsPanel() {
     </motion.div>
   );
 }
+
+// Stable initial data keeps the server and first client render identical.
+const INITIAL_POINTS = Array.from(
+  { length: 40 },
+  (_, index) => 52 + Math.sin(index * 0.72) * 13 + Math.cos(index * 0.31) * 7,
+);
 
 const STATS = [
   { icon: Zap, value: 118, suffix: "ms", label: "p95 retrieval latency", accent: "#9EFF7A" },

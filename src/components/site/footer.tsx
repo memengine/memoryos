@@ -29,8 +29,8 @@ const COLS = [
   {
     title: "Developers",
     links: [
-      { label: "Documentation", href: "#developers" },
-      { label: "Quickstart", href: "#developers" },
+      { label: "Documentation", href: "https://docs.memoryo.dev" },
+      { label: "Quickstart", href: "https://docs.memoryo.dev/quickstart" },
       { label: "Python SDK", href: "#developers" },
       { label: "TypeScript SDK", href: "#developers" },
       { label: "REST API", href: "#developers" },
@@ -48,9 +48,9 @@ const COLS = [
       { label: "Signals", href: "#signals" },
       { label: "Changelog", href: "#changelog" },
       { label: "FAQ", href: "#faq" },
-      { label: "Privacy", href: "#cta" },
-      { label: "Terms", href: "#cta" },
-      { label: "Contact", href: "#cta" },
+      { label: "Privacy", href: "https://docs.memoryo.dev/privacy" },
+      { label: "Terms", href: "https://docs.memoryo.dev/terms" },
+      { label: "Contact", href: "https://docs.memoryo.dev/contact" },
     ],
   },
 ];
@@ -99,11 +99,11 @@ export function Footer() {
             © 2026 MemoryOS · Governed state and context for production AI agents.
           </div>
           <div className="flex items-center gap-4 text-[12px] font-mono text-ink-mute">
-            <a href="#cta" className="hover:text-ink-soft transition-colors">Privacy</a>
-            <a href="#cta" className="hover:text-ink-soft transition-colors">Terms</a>
-            <a href="#cta" className="hover:text-ink-soft transition-colors">Cookies</a>
-            <a href="#cta" className="hover:text-ink-soft transition-colors">Security</a>
-            <a href="#cta" className="hover:text-ink-soft transition-colors">DPA</a>
+            <a href="https://docs.memoryo.dev/privacy" className="hover:text-ink-soft transition-colors">Privacy</a>
+            <a href="https://docs.memoryo.dev/terms" className="hover:text-ink-soft transition-colors">Terms</a>
+            <a href="https://docs.memoryo.dev/cookie-policy" className="hover:text-ink-soft transition-colors">Cookies</a>
+            <a href="https://docs.memoryo.dev/security" className="hover:text-ink-soft transition-colors">Security</a>
+            <a href="https://docs.memoryo.dev/dpa" className="hover:text-ink-soft transition-colors">DPA</a>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { Check, Sparkles, Building2, Users, Terminal } from "lucide-react";
+import { Check, Sparkles, Building2, Rocket, Scaling, Terminal } from "lucide-react";
 import { SectionLabel, SectionHeading } from "./problem";
 import { SectionNumber } from "./section-number";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ type Plan = {
   icon: React.ComponentType<{ className?: string }>;
   tagline: string;
   priceMonthly: number | null;
+  priceAnnual: number | null;
   priceNote: string;
   cta: string;
   href: string;
@@ -23,64 +24,11 @@ type Plan = {
 };
 
 const PLANS: Plan[] = [
-  {
-    id: "developer",
-    name: "Developer",
-    icon: Terminal,
-    tagline: "For prototyping and side projects.",
-    priceMonthly: 0,
-    priceNote: "free forever",
-    cta: "Start free",
-    href: "#cta",
-    accent: "#8A8F98",
-    features: [
-      "1 workspace · 1 tenant",
-      "10,000 memory operations / mo",
-      "General engine",
-      "Python · TypeScript · REST SDKs",
-      "Community support",
-    ],
-  },
-  {
-    id: "team",
-    name: "Team",
-    icon: Users,
-    tagline: "For products in production.",
-    priceMonthly: 240,
-    priceNote: "per workspace / mo",
-    cta: "Start 14-day trial",
-    href: "#cta",
-    highlighted: true,
-    accent: "#9EFF7A",
-    features: [
-      "Unlimited tenants & users",
-      "1M memory operations / mo",
-      "General + 1 domain schema",
-      "MCP server + quality gates",
-      "Memory Passport (user consent)",
-      "Provenance & audit trail",
-      "Email + Slack support",
-    ],
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    icon: Building2,
-    tagline: "For regulated, multi-agent systems.",
-    priceMonthly: null,
-    priceNote: "custom",
-    cta: "Talk to us",
-    href: "#cta",
-    accent: "#C8A2FF",
-    features: [
-      "Unlimited operations & schemas",
-      "Tenant isolation + SSO/SAML",
-      "Custom domain schemas",
-      "Graceful degradation + SLA",
-      "DPA · SOC 2 · audit exports",
-      "Dedicated solutions engineer",
-    ],
-  },
+  { id: "free", name: "Free", icon: Terminal, tagline: "For prototyping and side projects.", priceMonthly: 0, priceAnnual: 0, priceNote: "free forever", cta: "Start free", href: "https://app.memoryo.dev/sign-up?redirect=%2F", accent: "#8A8F98", features: ["5,000 memory operations / mo", "2M memory tokens / mo", "3 calls / user / minute", "Core memory lifecycle", "Community support"] },
+  { id: "starter", name: "Starter", icon: Rocket, tagline: "For early production agents.", priceMonthly: 1800, priceAnnual: 18000, priceNote: "per tenant / mo", cta: "Choose Starter", href: "", highlighted: true, accent: "#9EFF7A", features: ["50,000 memory operations / mo", "25M memory tokens / mo", "10 calls / user / minute", "Core memory lifecycle", "Usage alerts"] },
+  { id: "growth", name: "Growth", icon: Sparkles, tagline: "For growing multi-agent products.", priceMonthly: 6000, priceAnnual: 60000, priceNote: "per tenant / mo", cta: "Choose Growth", href: "", accent: "#62D9FF", features: ["500,000 memory operations / mo", "250M memory tokens / mo", "30 calls / user / minute", "Core memory lifecycle", "Usage alerts"] },
+  { id: "scale", name: "Scale", icon: Scaling, tagline: "For high-volume production systems.", priceMonthly: 18000, priceAnnual: 180000, priceNote: "per tenant / mo", cta: "Choose Scale", href: "", accent: "#FFB86B", features: ["1M memory operations / mo", "500M memory tokens / mo", "80 calls / user / minute", "Core memory lifecycle", "Priority usage alerts"] },
+  { id: "enterprise", name: "Enterprise", icon: Building2, tagline: "For regulated, multi-agent systems.", priceMonthly: null, priceAnnual: null, priceNote: "custom", cta: "Talk to us", href: "https://docs.memoryo.dev/contact", accent: "#C8A2FF", features: ["Custom operations & schemas", "Tenant isolation + SSO/SAML", "Custom domain schemas", "Graceful degradation + SLA", "DPA · SOC 2 · audit exports", "Dedicated solutions engineer"] },
 ];
 
 export function Pricing() {
@@ -104,7 +52,7 @@ export function Pricing() {
             <span className="text-ink-mute">Not for idle storage.</span>
           </SectionHeading>
           <p className="mt-6 max-w-2xl text-[15.5px] leading-[1.6] text-ink-soft">
-            Start free. Upgrade when your agents reach real users. Every plan
+            Start small. Upgrade when your agents reach real users. Every plan
             includes the full lifecycle — ingest, extract, reconcile, govern,
             retrieve.
           </p>
@@ -130,13 +78,13 @@ export function Pricing() {
               )}
             >
               Annual
-              <span className="text-[10px] font-mono text-mem/80">−20%</span>
+              <span className="text-[10px] font-mono text-mem/80">2 months free</span>
             </button>
           </div>
         </div>
 
         {/* plans */}
-        <div className="mt-10 grid lg:grid-cols-3 gap-5 items-start">
+        <div className="mt-10 grid md:grid-cols-2 xl:grid-cols-3 gap-5 items-start">
           {PLANS.map((p, i) => (
             <PlanCard key={p.id} plan={p} billing={billing} index={i} />
           ))}
@@ -145,10 +93,10 @@ export function Pricing() {
         {/* footnote */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] font-mono text-ink-mute">
           <span className="inline-flex items-center gap-1.5">
-            <Check className="h-3 w-3 text-mem" /> no credit card to start
+            <Check className="h-3 w-3 text-mem" /> simple monthly billing
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Check className="h-3 w-3 text-mem" /> cancel anytime
+            <Check className="h-3 w-3 text-mem" /> secure Razorpay checkout
           </span>
           <span className="inline-flex items-center gap-1.5">
             <Check className="h-3 w-3 text-mem" /> keep your stack
@@ -172,7 +120,10 @@ function PlanCard({
   index: number;
 }) {
   const monthly = plan.priceMonthly;
-  const effective = monthly === null ? null : billing === "annual" ? Math.round(monthly * 0.8) : monthly;
+  const effective = monthly === null ? null : billing === "annual" && plan.priceAnnual !== null ? plan.priceAnnual / 12 : monthly;
+  const checkoutHref = ["starter", "growth", "scale"].includes(plan.id)
+    ? `https://app.memoryo.dev/billing/checkout?plan=${plan.id}&billing=${billing}&currency=inr`
+    : plan.href;
   const Icon = plan.icon;
 
   return (
@@ -219,7 +170,7 @@ function PlanCard({
         ) : (
           <>
             <span className="text-[34px] font-semibold tracking-tight text-ink tabular">
-              ${effective}
+              ₹{effective.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
             </span>
             <span className="text-[12.5px] text-ink-mute font-mono">/ mo</span>
           </>
@@ -227,8 +178,8 @@ function PlanCard({
       </div>
       <div className="mt-0.5 text-[11.5px] font-mono text-ink-mute">
         {plan.priceNote}
-        {billing === "annual" && effective !== null && monthly !== null && (
-          <span className="ml-1.5 text-mem">billed annually</span>
+        {billing === "annual" && effective !== null && monthly !== null && plan.priceAnnual !== null && (
+          <span className="ml-1.5 text-mem">billed ₹{plan.priceAnnual.toLocaleString("en-IN")} annually</span>
         )}
       </div>
 
@@ -241,7 +192,7 @@ function PlanCard({
             : "bg-white/[0.05] text-ink hover:bg-white/[0.08] border border-hairline-strong"
         )}
       >
-        <a href={plan.href}>{plan.cta}</a>
+        <a href={checkoutHref}>{plan.cta}</a>
       </Button>
 
       <ul className="mt-6 space-y-2.5">

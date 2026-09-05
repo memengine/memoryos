@@ -56,7 +56,7 @@ export function FinalCTA() {
               variant="ghost"
               className="h-12 px-7 rounded-xl text-[15px] text-ink-soft hover:text-ink hover:bg-white/[0.04] gap-2 border border-hairline-strong"
             >
-              <a href="#developers">
+              <a href="https://docs.memoryo.dev/quickstart">
                 <BookOpen className="h-4 w-4" />
                 Read the docs
               </a>
@@ -67,7 +67,7 @@ export function FinalCTA() {
               variant="ghost"
               className="h-12 px-7 rounded-xl text-[15px] text-ink-soft hover:text-ink hover:bg-white/[0.04] gap-2"
             >
-              <a href="#cta">
+              <a href="https://docs.memoryo.dev/contact">
                 <MessageSquare className="h-4 w-4" />
                 Talk to an expert
               </a>

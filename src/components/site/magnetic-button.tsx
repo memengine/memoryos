@@ -18,18 +18,10 @@ export function MagneticButton({
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [offset, setOffset] = React.useState({ x: 0, y: 0 });
-  const [enabled, setEnabled] = React.useState(false);
-
-  React.useEffect(() => {
-    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setEnabled(mq.matches && !reduce.matches);
-    const onMq = () => setEnabled(mq.matches && !reduce.matches);
-    mq.addEventListener?.("change", onMq);
-    return () => mq.removeEventListener?.("change", onMq);
-  }, []);
 
   function onMove(e: React.MouseEvent) {
+    const enabled = window.matchMedia("(hover: hover) and (pointer: fine)").matches
+      && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!enabled || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const x = e.clientX - (rect.left + rect.width / 2);
