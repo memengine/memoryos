@@ -22,7 +22,7 @@ type ExtractedMemory = {
   confidence: number;
   evidence: string;
   conflict: boolean;
-  conflict_with?: string;
+  conflict_with?: string | null;
 };
 
 type ExtractResponse = {
