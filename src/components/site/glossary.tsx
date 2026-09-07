@@ -3,7 +3,6 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { SectionLabel, SectionHeading } from "./problem";
-import { SectionNumber } from "./section-number";
 import { cn } from "@/lib/utils";
 
 /**
@@ -78,7 +77,6 @@ export function Glossary() {
       id="glossary"
       className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden"
     >
-      <SectionNumber n="11" label="glossary" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/3 left-1/4 h-[320px] w-[480px] rounded-full bg-violet/8 blur-[140px]" />
       </div>
