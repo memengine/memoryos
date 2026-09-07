@@ -12,7 +12,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { SectionLabel, SectionHeading } from "./problem";
-import { SectionNumber } from "./section-number";
 
 const PILLARS = [
   {
@@ -65,7 +64,6 @@ export function Production() {
       id="production"
       className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden"
     >
-      <SectionNumber n="06" label="production" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/3 right-0 h-[380px] w-[500px] rounded-full bg-violet/10 blur-[150px]" />
       </div>
