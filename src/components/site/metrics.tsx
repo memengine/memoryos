@@ -4,7 +4,6 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { Activity, Zap, Database, Users, TrendingUp } from "lucide-react";
 import { SectionLabel, SectionHeading } from "./problem";
-import { SectionNumber } from "./section-number";
 import { AnimatedCounter } from "./animated-counter";
 
 /**
@@ -20,7 +19,6 @@ export function Metrics() {
       id="metrics"
       className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden"
     >
-      <SectionNumber n="10" label="metrics" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 h-[380px] w-[760px] rounded-full bg-mem/8 blur-[150px]" />
       </div>

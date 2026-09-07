@@ -147,7 +147,7 @@ export function MemoryPassport() {
   );
   const [newMemoryPulse, setNewMemoryPulse] = React.useState(false);
 
-  // Subscribe to memories extracted in the LiveDemo (real LLM → passport)
+  // Subscribe to representative memories sent from the guided demo preview.
   useExtractedMemorySubscription((ev) => {
     const newMemory: Memory = {
       id: ev.id,

@@ -4,7 +4,6 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { Check, Sparkles, Building2, Rocket, Scaling, Terminal } from "lucide-react";
 import { SectionLabel, SectionHeading } from "./problem";
-import { SectionNumber } from "./section-number";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +38,6 @@ export function Pricing() {
       id="pricing"
       className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden"
     >
-      <SectionNumber n="12" label="pricing" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 h-[360px] w-[700px] rounded-full bg-mem/8 blur-[150px]" />
       </div>
