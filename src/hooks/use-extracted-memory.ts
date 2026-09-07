@@ -3,9 +3,8 @@
 import * as React from "react";
 
 /**
- * useExtractedMemoryStore — a tiny pub/sub so the LiveDemo can publish a
- * freshly-extracted memory and the MemoryPassport can subscribe + display it
- * as a real persisted memory (with provenance from the API trace).
+ * Tiny pub/sub used to pass a representative memory from the guided demo to
+ * the local Memory Passport preview.
  *
  * No backend persistence — just in-memory cross-component state via a
  * module-level emitter.
@@ -23,7 +22,7 @@ export type ExtractedMemoryEvent = {
   provenance: { event: string; at: string; by: string }[];
   scope: string;
   writtenAt: string;
-  fromApi: true;
+  fromApi: boolean;
 };
 
 type Listener = (m: ExtractedMemoryEvent) => void;

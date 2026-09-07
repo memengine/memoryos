@@ -13,7 +13,6 @@ import {
   Clock,
 } from "lucide-react";
 import { SectionLabel, SectionHeading } from "./problem";
-import { SectionNumber } from "./section-number";
 
 /**
  * TrustCenter — security, compliance, and operational posture.
@@ -73,7 +72,6 @@ export function TrustCenter() {
       id="trust"
       className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden"
     >
-      <SectionNumber n="08" label="trust center" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 h-[360px] w-[700px] rounded-full bg-mem/6 blur-[150px]" />
       </div>
