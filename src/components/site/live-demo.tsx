@@ -11,49 +11,59 @@ import {
   Scale,
   History,
   KeyRound,
-  AlertCircle,
   Sparkles,
   Zap,
   ArrowDownToLine,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionLabel, SectionHeading } from "./problem";
-import { SectionNumber } from "./section-number";
 import { publishMemory, type ExtractedMemoryEvent } from "@/hooks/use-extracted-memory";
 
-/**
- * Live Memory Demo — now backed by a REAL LLM via /api/memory/extract.
- * User picks a sample OR types their own input → MemoryOS calls the real
- * extraction API → stages animate with real data → governed context emitted.
- */
+/** Guided, deterministic walkthrough of representative MemoryOS decisions. */
 
 const SAMPLES = [
   {
     id: "pref",
     text: "I prefer concise explanations.",
     label: "Preference",
+    memory: { memory_type: "preference", text: "Prefers concise explanations.", confidence: 9.6, evidence: "I prefer concise explanations.", conflict: false },
+    governed_context: "- Communication preference: Give concise explanations.",
   },
   {
     id: "debug",
     text: "I prefer short replies while debugging, but detailed steps when learning a new framework.",
     label: "Conditional preference",
+    memory: { memory_type: "preference", text: "Prefers short debugging replies and detailed learning guidance.", confidence: 9.4, evidence: "short replies while debugging, but detailed steps when learning", conflict: false },
+    governed_context: "- While debugging, keep replies short.\n- When teaching a new framework, provide detailed steps.",
   },
   {
     id: "stack",
     text: "We're building a B2B SaaS for Indian SMBs using FastAPI, Postgres, and Docker.",
     label: "Stack + project fact",
+    memory: { memory_type: "fact", text: "Building B2B SaaS for Indian SMBs with FastAPI, Postgres, and Docker.", confidence: 9.3, evidence: "building a B2B SaaS for Indian SMBs using FastAPI, Postgres, and Docker", conflict: false },
+    governed_context: "- Project: B2B SaaS for Indian SMBs.\n- Current stack: FastAPI, Postgres, and Docker.",
   },
   {
     id: "conflict",
     text: "Actually, switch me to TypeScript — not Python anymore.",
     label: "Correction / conflict",
+    memory: { memory_type: "preference", text: "Prefers TypeScript instead of Python.", confidence: 9.8, evidence: "switch me to TypeScript — not Python anymore", conflict: true, conflict_with: "Previously preferred Python" },
+    governed_context: "- Current language preference: TypeScript.\n- Do not recommend Python unless explicitly requested.",
   },
   {
     id: "goal",
     text: "My goal this quarter is to ship the onboarding flow end-to-end.",
     label: "Goal",
+    memory: { memory_type: "goal", text: "Ship the onboarding flow end-to-end this quarter.", confidence: 9.5, evidence: "My goal this quarter is to ship the onboarding flow end-to-end.", conflict: false },
+    governed_context: "- Current-quarter goal: Ship the onboarding flow end-to-end.",
   },
-];
+] satisfies ReadonlyArray<{
+  id: string;
+  text: string;
+  label: string;
+  memory: ExtractedMemory;
+  governed_context: string;
+}>;
 
 type ExtractedMemory = {
   memory_type: "preference" | "fact" | "goal" | "procedure";
@@ -80,8 +90,6 @@ type ApiResponse = {
   trace: TraceEntry[];
   memory: ExtractedMemory;
   governed_context: string;
-  latency_ms: number;
-  error?: string;
 };
 
 const STAGES = [
@@ -99,7 +107,6 @@ export function LiveDemo() {
   const [activeStage, setActiveStage] = React.useState<string | null>(null);
   const [running, setRunning] = React.useState(false);
   const [result, setResult] = React.useState<ApiResponse | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
   const [sentToPassport, setSentToPassport] = React.useState(false);
 
   function sendToPassport() {
@@ -109,7 +116,7 @@ export function LiveDemo() {
       type: result.memory.memory_type,
       text: result.memory.text,
       confidence: result.memory.confidence,
-      source: `live-demo · ${result.input.slice(0, 40)}`,
+      source: `guided-simulation · ${result.input.slice(0, 40)}`,
       status: result.memory.conflict ? "corrected" : "approved",
       conflict: result.memory.conflict,
       conflict_with: result.memory.conflict_with ?? null,
@@ -126,7 +133,7 @@ export function LiveDemo() {
         minute: "2-digit",
         hour12: false,
       }),
-      fromApi: true,
+      fromApi: false,
     };
     publishMemory(ev);
     setSentToPassport(true);
@@ -136,99 +143,48 @@ export function LiveDemo() {
   async function run() {
     if (running || !input.trim()) return;
     setRunning(true);
-    setError(null);
     setResult(null);
     setDoneStages([]);
     setActiveStage(null);
 
-    // Live trace buffer for the decision log
-    const trace: { stage: string; status: "done"; detail: string; at: string }[] = [];
-    let streamError: string | null = null;
+    const sample = SAMPLES.find((candidate) => candidate.id === activeSample) ?? SAMPLES[0];
+    const now = new Date();
+    const details: Record<string, string> = {
+      ingest: "Signal received and scoped to the example user.",
+      extract: `Durable ${sample.memory.memory_type} candidate extracted from direct evidence.`,
+      reconcile: sample.memory.conflict
+        ? `Correction detected; supersedes “${sample.memory.conflict_with}”.`
+        : "No competing active memory found.",
+      govern: "Quality and scope checks passed; provenance retained.",
+      retrieve: "Current memory selected and formatted as prompt-ready context.",
+    };
+    const trace: TraceEntry[] = [];
 
-    try {
-      const res = await fetch("/api/memory/extract-stream", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input }),
-      });
-
-      if (!res.ok || !res.body) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      // Read SSE stream
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        // Parse complete SSE events (separated by \n\n)
-        const events = buffer.split("\n\n");
-        buffer = events.pop() ?? "";
-
-        for (const evt of events) {
-          const line = evt.trim();
-          if (!line.startsWith("data: ")) continue;
-          const json = line.slice(6);
-          let data: any;
-          try {
-            data = JSON.parse(json);
-          } catch {
-            continue; // ignore parse errors on partial chunks
-          }
-          if (data.type === "stage") {
-            // Highlight the stage as active briefly, then mark done
-            setActiveStage(data.stage);
-            setTimeout(() => {
-              setDoneStages((prev) =>
-                prev.includes(data.stage) ? prev : [...prev, data.stage]
-              );
-              setActiveStage((cur) => (cur === data.stage ? null : cur));
-            }, 200);
-            trace.push({
-              stage: data.stage,
-              status: "done",
-              detail: data.detail,
-              at: data.at,
-            });
-          } else if (data.type === "result") {
-            const apiResult: ApiResponse = {
-              ok: true,
-              job_id: data.job_id,
-              tenant: data.tenant,
-              user: data.user,
-              input: data.input,
-              trace,
-              memory: data.memory,
-              governed_context: data.governed_context,
-              latency_ms: data.latency_ms,
-            };
-            setResult(apiResult);
-            // Ensure all stages are marked done
-            setDoneStages(STAGES.map((s) => s.id));
-            setActiveStage(null);
-          } else if (data.type === "error") {
-            streamError = data.message;
-          }
-        }
-      }
-      if (streamError) throw new Error(streamError);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Extraction failed");
-    } finally {
-      setRunning(false);
+    for (const [index, stage] of STAGES.entries()) {
+      setActiveStage(stage.id);
+      await new Promise((resolve) => window.setTimeout(resolve, 380));
+      trace.push({ stage: stage.id, status: "done", detail: details[stage.id], at: new Date(now.getTime() + index * 380).toISOString() });
+      setDoneStages((previous) => [...previous, stage.id]);
     }
+
+    setResult({
+      ok: true,
+      job_id: `sim_${sample.id}`,
+      tenant: "example-tenant",
+      user: "example-user",
+      input: sample.text,
+      trace,
+      memory: sample.memory,
+      governed_context: sample.governed_context,
+    });
+    setActiveStage(null);
+    setRunning(false);
   }
 
   function reset() {
     setDoneStages([]);
     setActiveStage(null);
     setResult(null);
-    setError(null);
     setRunning(false);
     setSentToPassport(false);
   }
@@ -243,21 +199,20 @@ export function LiveDemo() {
 
   return (
     <section id="demo" className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden">
-      <SectionNumber n="03" label="live demo" className="top-24" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-20 left-1/2 -translate-x-1/2 h-[400px] w-[700px] rounded-full bg-mem/8 blur-[140px]" />
       </div>
       <div className="container-page">
-        <SectionLabel>Live memory demo</SectionLabel>
+        <SectionLabel>Interactive product tour</SectionLabel>
         <SectionHeading>
-          Test the memory decision —
+          From user signal —
           <br />
-          <span className="text-ink-mute">powered by a real LLM.</span>
+          <span className="text-ink-mute">to governed context.</span>
         </SectionHeading>
         <p className="mt-5 max-w-2xl text-[15.5px] leading-[1.6] text-ink-soft">
-          Pick a sample or type your own input. MemoryOS calls a real
-          extraction model, runs the governance pipeline, and returns
-          prompt-ready governed context. No fake mockups.
+          Select a common memory scenario to see how MemoryOS identifies durable
+          information, handles conflicts, applies controls, and prepares context
+          for an agent.
         </p>
 
         <div className="mt-10 grid lg:grid-cols-[420px_1fr] gap-5">
@@ -269,7 +224,7 @@ export function LiveDemo() {
               </span>
               <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-mem">
                 <span className="h-1.5 w-1.5 rounded-full bg-mem animate-mem-pulse" />
-                {running ? "streaming · sse" : "live · llm-backed"}
+                {running ? "running simulation" : "interactive · simulated"}
               </span>
             </div>
             <div className="p-5 space-y-4">
@@ -281,6 +236,7 @@ export function LiveDemo() {
                   <button
                     key={s.id}
                     onClick={() => pickSample(s)}
+                    disabled={running}
                     className={`w-full text-left rounded-lg border px-3.5 py-2.5 transition-colors ${
                       activeSample === s.id
                         ? "border-mem/40 bg-mem/[0.06]"
@@ -297,27 +253,6 @@ export function LiveDemo() {
                     </div>
                   </button>
                 ))}
-              </div>
-
-              {/* Custom input */}
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.16em] text-ink-mute font-mono mb-1.5">
-                  or type your own
-                </div>
-                <textarea
-                  value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value);
-                    setActiveSample("custom");
-                  }}
-                  rows={3}
-                  maxLength={500}
-                  className="w-full resize-none rounded-lg border border-hairline bg-background/40 px-3 py-2.5 text-[13px] text-ink placeholder:text-ink-mute/60 focus:outline-none focus:border-mem/40 focus:bg-background/60 transition-colors scroll-thin"
-                  placeholder="Tell the agent something it should remember…"
-                />
-                <div className="mt-1 flex justify-end text-[10.5px] font-mono text-ink-mute">
-                  {input.length}/500
-                </div>
               </div>
 
               <div className="flex gap-2 pt-1">
@@ -340,6 +275,7 @@ export function LiveDemo() {
                 </Button>
                 <Button
                   onClick={reset}
+                  disabled={running}
                   variant="ghost"
                   className="h-10 px-3 border border-hairline hover:bg-white/[0.04]"
                   aria-label="Reset"
@@ -356,13 +292,10 @@ export function LiveDemo() {
               doneStages={doneStages}
               activeStage={activeStage}
               result={result}
-              error={error}
-              input={input}
             />
             <ResponsePanel
               ready={ready}
               result={result}
-              error={error}
               sentToPassport={sentToPassport}
               onSendToPassport={sendToPassport}
             />
@@ -377,16 +310,12 @@ function DecisionPath({
   doneStages,
   activeStage,
   result,
-  error,
-  input,
 }: {
   doneStages: string[];
   activeStage: string | null;
   result: ApiResponse | null;
-  error: string | null;
-  input: string;
 }) {
-  // Map API trace stages to our display stages
+  // Map the representative trace stages to the display pipeline.
   const traceByStage: Record<string, TraceEntry> = React.useMemo(() => {
     const m: Record<string, TraceEntry> = {};
     if (result) {
@@ -402,7 +331,7 @@ function DecisionPath({
       <div className="px-4 h-10 flex items-center justify-between border-b border-hairline bg-surface-2/50">
         <span className="text-[11.5px] font-mono text-ink-mute">decision path · 5-stage pipeline</span>
         <span className="text-[11px] font-mono text-ink-mute">
-          {result ? `${result.job_id} · ${result.latency_ms}ms` : "awaiting run"}
+          {result ? `${result.job_id} · representative trace` : "awaiting run"}
         </span>
       </div>
       <div className="p-5">
@@ -465,7 +394,7 @@ function DecisionPath({
             Decision log
           </div>
           <AnimatePresence mode="popLayout">
-            {!result && !error && doneStages.length === 0 && (
+            {!result && doneStages.length === 0 && (
               <motion.div
                 key="idle"
                 initial={{ opacity: 0 }}
@@ -473,19 +402,7 @@ function DecisionPath({
                 exit={{ opacity: 0 }}
                 className="text-[13px] text-ink-mute"
               >
-                Press <span className="font-mono text-ink-soft">Run decision</span> to call the real extraction model.
-              </motion.div>
-            )}
-            {error && (
-              <motion.div
-                key="error"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="font-mono text-[12.5px] text-rose"
-              >
-                <AlertCircle className="inline h-3.5 w-3.5 mr-1" />
-                <span className="text-rose">error</span> · {error}
+                Press <span className="font-mono text-ink-soft">Run decision</span> to play the guided decision trace.
               </motion.div>
             )}
             {result && (
@@ -524,13 +441,11 @@ function DecisionPath({
 function ResponsePanel({
   ready,
   result,
-  error,
   sentToPassport,
   onSendToPassport,
 }: {
   ready: boolean;
   result: ApiResponse | null;
-  error: string | null;
   sentToPassport: boolean;
   onSendToPassport: () => void;
 }) {
@@ -538,8 +453,8 @@ function ResponsePanel({
     <div className="rounded-2xl border border-hairline bg-surface overflow-hidden">
       <div className="px-4 h-10 flex items-center justify-between border-b border-hairline bg-surface-2/50">
         <span className="text-[11.5px] font-mono text-ink-mute">memory response</span>
-        <span className={`text-[11px] font-mono ${ready ? "text-mem" : error ? "text-rose" : "text-ink-mute"}`}>
-          {ready ? "ready · prompt-ready" : error ? "failed" : "awaiting decision"}
+        <span className={`text-[11px] font-mono ${ready ? "text-mem" : "text-ink-mute"}`}>
+          {ready ? "ready · prompt-ready" : "awaiting decision"}
         </span>
       </div>
       <div className="p-5">
@@ -614,7 +529,7 @@ function ResponsePanel({
           </span>
         </div>
 
-        {/* Send to Memory Passport — real persistence flow */}
+        {/* Local preview handoff to the interactive Passport walkthrough below. */}
         {ready && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
@@ -633,18 +548,17 @@ function ResponsePanel({
               {sentToPassport ? (
                 <>
                   <Check className="h-3.5 w-3.5" />
-                  Sent to Memory Passport · scroll down to inspect
+                  Added to Passport preview · scroll down to inspect
                 </>
               ) : (
                 <>
                   <ArrowDownToLine className="h-3.5 w-3.5" />
-                  Persist to Memory Passport
+                  Preview in Memory Passport
                 </>
               )}
             </button>
             <p className="mt-2 text-[11px] font-mono text-ink-mute">
-              Writes this memory into the interactive passport below —
-              inspectable, correctable, revocable.
+              Adds this simulated memory to the local interactive preview below.
             </p>
           </motion.div>
         )}
