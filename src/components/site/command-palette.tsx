@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import {
   CommandDialog,
   CommandList,
@@ -36,7 +35,6 @@ import {
  */
 export function CommandPalette() {
   const [open, setOpen] = React.useState(false);
-  const router = useRouter();
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -59,13 +57,18 @@ export function CommandPalette() {
 
   function go(href: string) {
     setOpen(false);
-    // use anchor scrolling for in-page sections
-    const el = document.querySelector(href);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      router.push(href);
+    if (href.startsWith("#")) {
+      // Wait for the dialog to release its body scroll lock before navigating.
+      window.setTimeout(() => {
+        const el = document.querySelector(href);
+        if (!el) return;
+        window.history.replaceState(null, "", href);
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 150);
+      return;
     }
+
+    window.location.assign(href);
   }
 
   return (
@@ -110,7 +113,7 @@ export function CommandPalette() {
               <Play className="h-4 w-4 text-mem" />
               <span>Live memory playground</span>
             </CommandItem>
-            <CommandItem onSelect={() => go("#developers")} className="gap-2.5">
+            <CommandItem onSelect={() => go("https://docs.memoryo.dev/quickstart")} className="gap-2.5">
               <Code2 className="h-4 w-4 text-mem" />
               <span>Developers · SDKs & API</span>
             </CommandItem>
@@ -157,7 +160,7 @@ export function CommandPalette() {
               <span>Try MemoryOS</span>
               <CommandShortcut>⏎</CommandShortcut>
             </CommandItem>
-            <CommandItem onSelect={() => go("#developers")} className="gap-2.5">
+            <CommandItem onSelect={() => go("https://docs.memoryo.dev")} className="gap-2.5">
               <Terminal className="h-4 w-4 text-mem" />
               <span>Read the quickstart</span>
             </CommandItem>
@@ -186,11 +189,11 @@ export function CommandPalette() {
               <ShieldCheck className="h-4 w-4 text-ink-mute" />
               <span>Security & governance</span>
             </CommandItem>
-            <CommandItem onSelect={() => go("#cta")} className="gap-2.5">
+            <CommandItem onSelect={() => go("https://github.com/memengine/memory-api")} className="gap-2.5">
               <Github className="h-4 w-4 text-ink-mute" />
-              <span>GitHub · examples</span>
+              <span>MemoryOS API · GitHub</span>
             </CommandItem>
-            <CommandItem onSelect={() => go("#cta")} className="gap-2.5">
+            <CommandItem onSelect={() => go("https://docs.memoryo.dev/contact")} className="gap-2.5">
               <ArrowRight className="h-4 w-4 text-ink-mute" />
               <span>Talk to an expert</span>
             </CommandItem>
