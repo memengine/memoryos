@@ -1,4 +1,8 @@
 @import "tailwindcss";
+
+section[id] {
+  scroll-margin-top: 6rem;
+}
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
