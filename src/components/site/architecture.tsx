@@ -14,7 +14,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { SectionLabel, SectionHeading } from "./problem";
-import { SectionNumber } from "./section-number";
 
 /**
  * Architecture — a detailed system diagram showing how MemoryOS sits inside
@@ -27,7 +26,6 @@ export function Architecture() {
       id="architecture"
       className="relative py-20 lg:py-28 border-t border-hairline overflow-hidden"
     >
-      <SectionNumber n="07" label="architecture" />
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 h-[420px] w-[820px] rounded-full bg-mem/8 blur-[160px]" />
       </div>
