@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { MemoryOS, MemoryOSError } from "memoryo-sdk";
 
@@ -26,12 +26,6 @@ function configured(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) throw new Error(`Missing server configuration: ${name}`);
   return value;
-}
-
-function safeEqual(left: string, right: string): boolean {
-  const a = Buffer.from(left);
-  const b = Buffer.from(right);
-  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 function cleanHistory(value: unknown): ChatMessage[] {
@@ -129,25 +123,18 @@ async function answerClarification(params: {
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Sign in to use the assistant." }, { status: 401 });
+    }
+
     const body = (await request.json()) as Record<string, unknown>;
     const action = body.action === "answer_clarification" ? "answer_clarification" : "chat";
     const message = typeof body.message === "string" ? body.message.trim() : "";
-    const externalUserId = typeof body.externalUserId === "string" ? body.externalUserId.trim() : "";
-    const accessCode = typeof body.accessCode === "string" ? body.accessCode : "";
+    const externalUserId = `assistant:${userId}`;
 
     if (action === "chat" && (!message || message.length > MAX_MESSAGE_LENGTH)) {
       return NextResponse.json({ error: "Enter a message between 1 and 2,000 characters." }, { status: 400 });
-    }
-    if (!/^demo_[a-zA-Z0-9-]{8,80}$/.test(externalUserId)) {
-      return NextResponse.json({ error: "Invalid demo identity." }, { status: 400 });
-    }
-
-    const requiredAccessCode = process.env.ASSISTANT_DEMO_ACCESS_CODE?.trim();
-    if (process.env.NODE_ENV === "production" && !requiredAccessCode) {
-      return NextResponse.json({ error: "The private demo is not configured." }, { status: 503 });
-    }
-    if (requiredAccessCode && !safeEqual(accessCode, requiredAccessCode)) {
-      return NextResponse.json({ error: "Invalid demo access code." }, { status: 401 });
     }
 
     const apiKey = configured("MEMORYOS_API_KEY");
@@ -264,7 +251,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const status = error instanceof MemoryOSError && error.statusCode ? error.statusCode : 500;
     const publicMessage = status === 401
-      ? "MemoryOS rejected the server API key."
+      ? "The assistant integration is not authorized."
       : status === 404
         ? "This clarification is no longer available for this user."
         : status === 409

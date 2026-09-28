@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MemoryOS Assistant — Multi-service memory demo",
-  description: "One assistant backed by governed context from multiple trusted services.",
+  title: "Northstar Assistant",
+  description: "A customer assistant with context that carries across sessions.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <ClerkProvider><html lang="en"><body>{children}</body></html></ClerkProvider>;
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { UserButton, useUser } from "@clerk/nextjs";
 import {
-  AlertCircle, ArrowLeft, ArrowUp, Bot, Check, CircleUserRound,
+  AlertCircle, ArrowUp, Bot, Check,
   Database, LoaderCircle, Menu,
   MessageSquarePlus, PanelRightClose, PanelRightOpen, Search,
   ShieldCheck, Sparkles,
@@ -59,11 +60,10 @@ function writeStatusLabel(write: AssistantResponse["write"]): string {
 }
 
 export function AssistantShell() {
+  const { isLoaded, user } = useUser();
   const [evidenceOpen, setEvidenceOpen] = React.useState(true);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [draft, setDraft] = React.useState("");
-  const [accessCode, setAccessCode] = React.useState("");
-  const [externalUserId, setExternalUserId] = React.useState("");
   const [messages, setMessages] = React.useState<ChatTurn[]>([]);
   const [evidence, setEvidence] = React.useState<EvidenceItem[]>([]);
   const [memoryState, setMemoryState] = React.useState({ quotaMode: "READY", circuitStatus: "HEALTHY", cached: false });
@@ -77,22 +77,12 @@ export function AssistantShell() {
   const bottomRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    const stored = window.localStorage.getItem("memoryos-demo-user");
-    const identity = stored ?? `demo_${crypto.randomUUID()}`;
-    window.localStorage.setItem("memoryos-demo-user", identity);
-    // Browser storage is intentionally read after hydration.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setExternalUserId(identity);
-    setAccessCode(window.sessionStorage.getItem("memoryos-demo-access") ?? "");
-  }, []);
-
-  React.useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading, error, resolvingClarificationId]);
 
   async function sendMessage() {
     const message = draft.trim();
-    if (!message || !externalUserId || loading || resolvingClarificationId || sendingRef.current) return;
+    if (!message || !user || loading || resolvingClarificationId || sendingRef.current) return;
     sendingRef.current = true;
     const history = messages.map(({ role, content }) => ({ role, content }));
     const userTurn: ChatTurn = { id: crypto.randomUUID(), role: "user", content: message };
@@ -100,13 +90,12 @@ export function AssistantShell() {
     setDraft("");
     setError("");
     setLoading(true);
-    window.sessionStorage.setItem("memoryos-demo-access", accessCode);
 
     try {
       const response = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history, externalUserId, accessCode }),
+        body: JSON.stringify({ message, history }),
       });
       const payload = (await response.json()) as AssistantResponse;
       if (!response.ok || !payload.answer) throw new Error(payload.error ?? "The assistant could not answer.");
@@ -134,11 +123,10 @@ export function AssistantShell() {
   }
 
   async function resolveClarification(clarification: MemoryClarification, answer: ClarificationAnswer, label: string) {
-    if (!externalUserId || loading || resolvingRef.current || resolvedClarifications[clarification.id]) return;
+    if (!user || loading || resolvingRef.current || resolvedClarifications[clarification.id]) return;
     resolvingRef.current = true;
     setResolvingClarificationId(clarification.id);
     setError("");
-    window.sessionStorage.setItem("memoryos-demo-access", accessCode);
 
     try {
       const response = await fetch("/api/assistant", {
@@ -148,8 +136,6 @@ export function AssistantShell() {
           action: "answer_clarification",
           clarificationId: clarification.id,
           answer,
-          externalUserId,
-          accessCode,
         }),
       });
       const payload = (await response.json()) as AssistantResponse;
@@ -196,9 +182,7 @@ export function AssistantShell() {
             <Logo className="text-white" />
             <button onClick={() => setMobileNavOpen(false)} className="rounded-lg p-2 text-white/50 hover:bg-white/5 lg:hidden" aria-label="Close menu">×</button>
           </div>
-          <a href="https://memoryo.dev" className="mt-5 flex items-center gap-2 rounded-xl border border-white/[0.08] px-3 py-2.5 text-sm text-white/60 transition hover:bg-white/[0.04] hover:text-white">
-            <ArrowLeft className="size-4" /> Back to MemoryOS
-          </a>
+          <div className="mt-5 rounded-xl border border-white/[0.08] px-3 py-2.5 text-sm text-white/50">Customer workspace</div>
           <button onClick={newConversation} className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-[#9EFF7A] px-3 py-3 text-sm font-semibold text-[#071008]">
             <MessageSquarePlus className="size-4" /> New conversation
           </button>
@@ -211,8 +195,8 @@ export function AssistantShell() {
           </div>
           <div className="mt-auto rounded-2xl border border-white/[0.08] bg-white/[0.025] p-3.5">
             <div className="flex items-center gap-2.5">
-              <div className="grid size-9 place-items-center rounded-full bg-white/[0.07]"><CircleUserRound className="size-4 text-white/65" /></div>
-              <div className="min-w-0"><div className="truncate text-sm font-medium">Design partner demo</div><div className="truncate text-xs text-white/35">Isolated test identity</div></div>
+              <UserButton appearance={{ elements: { avatarBox: "size-9" } }} />
+              <div className="min-w-0"><div className="truncate text-sm font-medium">{isLoaded ? user?.fullName || user?.firstName || "Signed-in user" : "Loading account…"}</div><div className="truncate text-xs text-white/35">{user?.primaryEmailAddress?.emailAddress || "Authenticated customer"}</div></div>
             </div>
           </div>
         </aside>
@@ -221,8 +205,8 @@ export function AssistantShell() {
           <header className="flex h-16 items-center border-b border-white/[0.08] px-4 sm:px-6">
             <button onClick={() => setMobileNavOpen(true)} className="mr-3 rounded-lg p-2 text-white/60 hover:bg-white/5 lg:hidden" aria-label="Open menu"><Menu className="size-5" /></button>
             <div>
-              <div className="flex items-center gap-2 text-sm font-semibold"><Bot className="size-4 text-[#9EFF7A]" /> MemoryOS Assistant</div>
-              <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-white/35"><span className="size-1.5 rounded-full bg-[#9EFF7A]" /> Live MemoryOS · GPT-4.1 mini</div>
+              <div className="flex items-center gap-2 text-sm font-semibold"><Bot className="size-4 text-[#9EFF7A]" /> Northstar Assistant</div>
+              <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-white/35"><span className="size-1.5 rounded-full bg-[#9EFF7A]" /> Online · GPT-4.1 mini</div>
             </div>
             <button onClick={() => setEvidenceOpen((value) => !value)} className="ml-auto rounded-lg border border-white/[0.08] p-2 text-white/45 transition hover:bg-white/5 hover:text-white" aria-label="Toggle evidence panel">
               {evidenceOpen ? <PanelRightClose className="size-4" /> : <PanelRightOpen className="size-4" />}
@@ -235,7 +219,7 @@ export function AssistantShell() {
               <div className="flex gap-3">
                 <div className="grid size-9 shrink-0 place-items-center rounded-xl border border-[#9EFF7A]/20 bg-[#9EFF7A]/10"><Sparkles className="size-4 text-[#9EFF7A]" /></div>
                 <div className="max-w-2xl">
-                  <div className="text-[13px] font-medium text-white/55">MemoryOS Assistant</div>
+                  <div className="text-[13px] font-medium text-white/55">Northstar Assistant</div>
                   <h1 className="mt-2 text-balance text-2xl font-semibold tracking-tight sm:text-3xl">One assistant. Context from every trusted service.</h1>
                   <p className="mt-3 max-w-xl text-[15px] leading-7 text-white/55">Ask about your work, previous support conversations or account. The assistant combines relevant context into one answer while MemoryOS keeps sources and authority visible.</p>
                   <div className="mt-5 flex flex-wrap gap-2">
@@ -290,8 +274,8 @@ export function AssistantShell() {
               <div className="rounded-2xl border border-white/[0.1] bg-[#0c0f12]/95 p-2 shadow-2xl shadow-black/30 focus-within:border-[#9EFF7A]/30">
                 <textarea value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} rows={2} maxLength={2000} placeholder="Ask the assistant…" className="w-full resize-none bg-transparent px-3 py-2 text-[15px] text-white outline-none placeholder:text-white/25" />
                 <div className="flex items-center justify-between px-2 pb-1">
-                  <input type="password" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} placeholder="Private demo access code" aria-label="Private demo access code" className="w-48 bg-transparent font-mono text-[10px] text-white/55 outline-none placeholder:text-white/20" />
-                  <button onClick={() => void sendMessage()} disabled={!draft.trim() || loading || Boolean(resolvingClarificationId) || !externalUserId} className="grid size-9 place-items-center rounded-xl bg-[#9EFF7A] text-[#071008] transition hover:bg-[#B5FF99] disabled:cursor-not-allowed disabled:bg-white/[0.08] disabled:text-white/25" aria-label="Send message"><ArrowUp className="size-4" /></button>
+                  <span className="px-1 text-[10px] text-white/25">Signed in as {user?.firstName || "customer"}</span>
+                  <button onClick={() => void sendMessage()} disabled={!draft.trim() || loading || Boolean(resolvingClarificationId) || !user} className="grid size-9 place-items-center rounded-xl bg-[#9EFF7A] text-[#071008] transition hover:bg-[#B5FF99] disabled:cursor-not-allowed disabled:bg-white/[0.08] disabled:text-white/25" aria-label="Send message"><ArrowUp className="size-4" /></button>
                 </div>
               </div>
               <p className="mt-2 text-center text-[10px] text-white/25">MemoryOS is additive: the assistant will continue safely when memory is empty or degraded.</p>
@@ -303,8 +287,9 @@ export function AssistantShell() {
           <aside className="fixed inset-y-0 right-0 z-30 hidden h-dvh w-[360px] overflow-y-auto border-l border-white/[0.08] bg-[#090c0e]/95 p-5 backdrop-blur-xl lg:block lg:static lg:w-auto">
             <div className="flex items-center justify-between"><div><div className="text-sm font-semibold">Answer evidence</div><div className="mt-1 text-xs text-white/35">Retrieved for the latest answer</div></div><ShieldCheck className="size-5 text-[#9EFF7A]" /></div>
             <div className="mt-6 rounded-2xl border border-[#9EFF7A]/20 bg-[#9EFF7A]/[0.045] p-4">
-              <div className="flex items-center gap-2 text-xs font-medium text-[#9EFF7A]"><ShieldCheck className="size-4" /> MemoryOS governance</div>
+              <div className="flex items-center gap-2 text-xs font-medium text-[#9EFF7A]"><ShieldCheck className="size-4" /> Context governance</div>
               <p className="mt-2 text-xs leading-5 text-white/45">{memoryState.quotaMode} retrieval · {memoryState.circuitStatus.toLowerCase()} circuit{memoryState.cached ? " · cached" : ""}</p>
+              <p className="mt-2 text-[10px] text-white/25">Governed context provided by MemoryOS</p>
             </div>
             <SectionTitle>Relevant memory preview</SectionTitle>
             {evidence.length ? <div className="space-y-2">
