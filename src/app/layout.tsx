@@ -43,14 +43,19 @@ export const metadata: Metadata = {
     url: "https://memoryo.dev",
     siteName: "MemoryOS",
     type: "website",
-    images: ["/og.png"],
+    images: [{
+      url: "/og.png?v=real-logo-1",
+      width: 1200,
+      height: 630,
+      alt: "MemoryOS — Governed memory for production AI agents",
+    }],
   },
   twitter: {
     card: "summary_large_image",
     title: "MemoryOS — Governed memory for production AI agents",
     description:
       "Give every authorized agent context it can trust. Persistent, governed state for production AI systems.",
-    images: ["/og.png"],
+    images: [{ url: "/og.png?v=real-logo-1", alt: "MemoryOS — Governed memory for production AI agents" }],
   },
 };
 
